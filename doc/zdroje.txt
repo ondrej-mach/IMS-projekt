@@ -1,3 +1,12 @@
+# V2G
 https://en.wikipedia.org/wiki/Vehicle-to-grid 
 https://www.mdpi.com/2079-9292/9/1/80
 https://www.mdpi.com/2032-6653/10/4/80
+
+
+# Solarni elektrarny
+https://www.ceska-solarni.cz/kalkulacka
+
+## Krivky pri ruznem pocasi
+https://www.researchgate.net/figure/Solar-power-output-varies-based-on-time-of-day-and-local-weather-conditions_fig1_317055348
+https://www.researchgate.net/figure/Typical-daily-power-production-profile-from-solar-panels-1_fig7_325951690
