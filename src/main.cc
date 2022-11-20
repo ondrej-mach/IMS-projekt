@@ -15,6 +15,11 @@ const float meterInterval = 2; // minute
 const float EV_CAPACITY = 50; // kWh
 const float EV_INITIAL_CHARGE = 25; // kWh
 const float EV_LOW_LIMIT = 20; // kWh
+const float EV_CHARGE_EFF = 0.85;
+const float EV_DISCHARGE_EFF = 0.68;
+const float EV_MAX_CHARGE_POWER = 6; // kW before the losses
+const float EV_NORMAL_CHARGE_POWER = 1.5; // kW, activates when battery
+const float EV_MAX_DISCHARGE_POWER = 6; // kW after the losses
 
 // Household
 // Stuff, that is on all the time
@@ -85,12 +90,18 @@ enum EVMode{ V2G, V1G, DUMB, NONE };
 class EV : public Process {
 	double batteryEnergy = EV_INITIAL_CHARGE;
 	EVMode mode = V2G;
-	
+	bool available = true;
 	
 	
 	void Behavior() {
 		while (1) {
 			// available = false;
+			int h = getTimeOfDay();
+			if (h>7 and h<23) {
+				currentPower += 0.3;
+			} else {
+				currentPower += 0;
+			}
 			Wait(5);
 		}
 	}
@@ -98,12 +109,15 @@ class EV : public Process {
 public:
 	// energy in kwh, time in minutes
 	float getEnergy(float energy, float time) {
-		float available;
+		if (!available) {
+			return 0;
+		}
 		
+		float needed = energy / EV_DISCHARGE_EFF;
 		
 		if (mode == V2G) {
-			if (batteryEnergy - energy > EV_LOW_LIMIT) {
-				batteryEnergy -= energy;
+			if (batteryEnergy - needed > EV_LOW_LIMIT) {
+				batteryEnergy -= needed;
 				return energy;
 			}
 		}
@@ -113,22 +127,37 @@ public:
 	
 	// energy in kwh, time in minutes
 	float chargeEnergy(float energy, float time) {
-		float available;
-		
-		switch (mode) {
-			case V2G:
-			case V1G:
-				if (batteryEnergy + energy < EV_CAPACITY) {
-					batteryEnergy += energy;
-					return energy;
-				}
-				
-				return 0;
-			
-			case DUMB:
-			case NONE:
-				return 0;
+		if (!available) {
+			return 0;
 		}
+		
+		if ((mode == V1G) || (mode == V2G)) {
+			float chargedEnergy;
+			float maxEnergy = time/60 * EV_MAX_CHARGE_POWER;
+			
+			if (energy > EV_MAX_CHARGE_POWER) {
+				chargedEnergy = time/60 * EV_MAX_CHARGE_POWER;
+			} else {
+				time/60 * EV_NORMAL_CHARGE_POWER;
+			}
+			
+			if (batteryEnergy + energy < EV_CAPACITY) {
+				batteryEnergy += energy * EV_CHARGE_EFF;
+				return energy;
+			}
+			
+			return 0;
+		}
+			
+		if (mode == DUMB) {
+			float chargedEnergy = time/60 * EV_NORMAL_CHARGE_POWER;
+			if (batteryEnergy + chargedEnergy * EV_CHARGE_EFF < EV_CAPACITY) {
+				batteryEnergy += chargedEnergy * EV_CHARGE_EFF;
+				return chargedEnergy;
+			}
+		}
+
+		// mode NONE never charges nor discharges
 		return 0;
 	}
 };
@@ -157,15 +186,17 @@ private:
 			
 			
 			float netEnergy = (solarPower - loadPower)*meterInterval/60;
-			if (netEnergy > 0) {
-				float chargedEnergy = ev->chargeEnergy(netEnergy, meterInterval);
-				netEnergy -= chargedEnergy;
-				chargePowerMemory[measuredSamples] = chargedEnergy*60/meterInterval;
-			} else {
-				float recoveredEnergy = ev->getEnergy(-netEnergy, meterInterval);
-				netEnergy += recoveredEnergy;
-				recoverPowerMemory[measuredSamples] = recoveredEnergy*60/meterInterval;
-			}
+			
+			float preferredCharge = (netEnergy > 0) ? netEnergy : 0;
+			float chargedEnergy = ev->chargeEnergy(preferredCharge, meterInterval);
+			netEnergy -= chargedEnergy;
+			chargePowerMemory[measuredSamples] = chargedEnergy*60/meterInterval;
+			
+			float preferredDischarge = (netEnergy < 0) ? -netEnergy : 0;
+			float recoveredEnergy = ev->getEnergy(preferredDischarge, meterInterval);
+			netEnergy += recoveredEnergy;
+			recoverPowerMemory[measuredSamples] = recoveredEnergy*60/meterInterval;
+			
 			
 			netPowerMemory[measuredSamples] = netEnergy*60/meterInterval;
 			measuredSamples++;

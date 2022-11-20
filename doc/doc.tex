@@ -52,7 +52,108 @@ Technologie je poměrně nová a studie na toto téma dochází k různým záv�
 
 \section{Simulační model}
 
+Simulační model je logicky rozdělen na domácnost, solární elektrárnu, elektrické vozidlo a měřící zařízení.
+
+\bigskip
+\includegraphics[width=0.5\linewidth]{img/diagram.pdf}
+\bigskip
+
+V rámci solární elektrárny je náhodně generován výkon.
+Ten je závislý pouze na modelovém čase, ze kterého je určeno roční období.
+
+Modul domácnosti generuje spotřebovaný výkon, který je také závislý na čase,
+
+
+\subsection{Solární elektrárna}
+V rámci tohoto modulu je náhodně generována výroba energie.
+Jediným výstupem je tudíž proměnná, ve které je uložen výkon elektrárny v daném čase.
+Vstupem pro toto generování je čas, podle kterého je určeno roční období.
+To má v realité významný vliv na výkon elektrárny, proto je nutné ho brát v úvahu.
+
+
+Tady napsat, jak se počítá výkon podle období.
+
+
+\subsection{Domácnost}
+Modul domácnosti má za úkol náhodně modelovat spotřebu elektrické energie tak,
+aby se co nejblíže podobal reálné domácnosti.
+Má tedy jedinou výstupní proměnnou, která udává výkon spotřebovaný v daném čase.
+Spotřeba domácnosti závisí na čase, ze kterého je spočítán den v týdnu a roční období.
+
+Spotřeba v domácnosti je zcela nezávislá na výkonu elektrárny v daném čase.
+Zde by mohl být drobný rozdíl oproti realitě.
+Členové domácnosti mohou záměrně spotřebovávat více elektřiny, pokud má zrovna elektrárna přebytečný výkon.
+Dobrý příklad tohoto by bylo zapnutí elektrické trouby, když je elektrárna v provozu.
+
+Domácnost je modelována jako proces knihovny SIMLIB.
+Spotřeba je počítána jako součet konstantní a dynamické spotřeby.
+Konstantní představuje výkon, který je odebírán vždy.
+V reálné domácnosti by tento výkon představovaly například síťové modemy a switche.
+Dále je do této části započítána pohotovostní spotřeba televizí, monitorů, počítačů a jiných spotřebičů.
+
+Dynamická spotřeba představuje spotřebiče, které spotřebovávají energii pouze občas.
+Toto je naprostá většina spotřebičů používaných v domácnosti.
+Patřila by sem například varná konvice, elektrický sporák, televize, počítač a mnoho dalších.
+Každý spotřebič má zadáno, mezi kterými časy se spouští a jaký podíl této doby je průměrně aktivní. [TODO mozna i neco dalsiho]
+Podle těchto parametrů náhodně generuje zátěž.
+
+Dynamická spotřeba je zcela nutná, aby byl model validní.
+V případě, že by byla modelována pouze konstantní spotřeba,
+celková spotřeba by mohla být stejná, ale spotřeba ze sítě resp. dodávka do sítě by se výrazně lišila.
+
+Modul domácnosti periodicky scítá výkon všech spotřebičů a ukládá ho do jedné sdílené proměnné.
+Toto je jeho výstup, který je monitorován monitorovacím zařízemním.
+
+
+\subsection{Elektrické vozidlo}
+Elektrické vozidlo je implementováno jako další proces knihovny SIMLIB.
+V porovnání s realitou tento modul obsahuje více, než jen EV.
+Obsahuje i nabíjecí stanici, která nabíjí vozidlo, případně dodává energii do sítě.
+V tomto modulu jsou také počítány veškeré ztráty energie, ke kterým dochází při nabíjení, resp. vybíjení.
+
+Tento modul může být nastaven na více režimů operace, a těmi jsou V2G, V1G, obyčejná nabíječka a žádné auto.
+Režim V2G znamená, že EV se nabíjí podle toho, jestli je nějaký přebytek energie z elektrárny.
+Dále v tomto režimu EV dodává elektřinu do sítě, pokud ho o to měřící zařízení požádá.
+Může tak pokrýt spotřebu v domu, pokud zrovna elektrárna nedodává dostatený výkon.
+
+V režimu V1G je zachováno nabíjení, které spotřebuje pouze přebytek energie v síti.
+Oproti V2G ale EV nemůže dodávat energii do sítě.
+
+V režimu obyčejné nabíječky EV nebere žádný ohled na současnou spotřebu v síti.
+Nabíjí se konstantní rychlostí, dokud není baterie plná.
+
+Modul také obsahuje režim, který představuje, že žádné EV není připojeno k síti.
+Jedná se spíše o implementační detail, díky kterému lze simulaci provést i bez EV.
+
+Nabíjení vozidla a dodávání energie do sítě je implementováno metodami třídy v C++.
+Objekt EV má proměnnou, ve které je současná energie, která je nabita v baterii.
+Měřící nástroj může vozidlu poslat, že chce v následujícím měřícím úseku nabít do baterie nějaké množství energie.
+Tato funkce vrátí skutečné množství energie, které bylo spotřebované vozidlem.
+Pokud je množství energie za davý čas příliš velké,
+vozidlo se nemůže nabíjet tak rychle, spotřebuje pouze množství omezené maximálním výkonem nabíječky.
+Dodávka energie do sítě se řídí stejným pravidlem.
+
+Pokud je EV na minimálním limitu baterie, nedodává již žádnou energii do sítě.
+Pokud je naopak baterie plně nabitá, vozidlo nespotřebovává žádnou energii.
+
+\subsection{Měřící zařízení}
+Měřící zařízení je implementov8no jeko proces knihovny SIMLIB.
+Tento proces provádí v pravidelných intervalech měření spořeby a výroby elektrické energie.
+Pokud toto zařízení zjistí nadbytek energie v síti, dá EV možnost tuto energii spotřebovat.
+Pokud je v síti naopak nedostatek energie a bylo by nutné ji brát od dodavatele, požádá EV o dodávku energie.
+Poté spočítá sumu i s elekrickým vozidlem.
+Všechny naměřené údaje jsou ukládány do sdíleného pole, aby šly přečíst a analyzovat po skončení simulace.
+
+\section{Provedení simulace}
+
+\subsection{Nastavení parametrů}
+
+\subsection{Získaná data}
+
+
 \section{Závěr}
+
+Provedená simulace dokázala, že ...
 
 \end{document}
 

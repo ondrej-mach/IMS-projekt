@@ -1,2 +1,7 @@
 sim
 out.csv
+*.aux
+*.log
+*.pdf
+*.synctex.gz
+*.toc
