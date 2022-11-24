@@ -6,3 +6,7 @@ sim: src/main.cc
 	
 run: sim
 	LD_LIBRARY_PATH=/usr/local/lib/ ./sim
+	
+chart: out.csv src/chart.py
+	python3 src/chart.py
+	

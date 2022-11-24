@@ -1,7 +1,7 @@
 #include <simlib.h>
 
 #include <stdio.h>
-
+#include <math.h>
 
 // Simulation parameters
 const int SIM_START_TIME = 0; // minutes
@@ -57,7 +57,7 @@ class Solar : public Process {
 		while (1) {
 			int h = getTimeOfDay();
 			if (h>8 and h<18) {
-				solarPower = SOLAR_INSTALLED_POWER;
+				solarPower = 0.3 * SOLAR_INSTALLED_POWER;
 			} else {
 				solarPower = 0;
 			}
@@ -66,26 +66,101 @@ class Solar : public Process {
 	}
 };
 
+
+const float APPLIANCE_TICK_TIME = 1;
+
+class Appliance : public Process {
+public:
+	// probability is array of 24 values (for each hour in day)
+	// avgTime is mean time of using this appliance
+	// power is in kW
+	Appliance(float *probability, float avgTime, float power) {
+		this->probability = probability;
+		this->avgTime = avgTime;
+		this->power = power;
+    }
+    
+    float readPower() {
+		return active ? power : 0;
+	}
+	
+private:
+	bool active = false;
+	float power;
+	float *probability;
+	float avgTime;
+	
+	void Behavior() {
+		float integrator = 0;
+		
+		while (1) {
+			// read probability of being active at this time
+			float currentProb = probability[getTimeOfDay()];
+			// Add to integrator
+			integrator += currentProb * APPLIANCE_TICK_TIME;
+			if (active) {
+				// if it is currently active, subtract from integrator
+				integrator -= APPLIANCE_TICK_TIME;
+			}
+			
+			// There could be added some random element
+			if (active) {
+				// turn off
+				if (integrator < -avgTime/2) {
+					active = false;
+				}
+			} else {
+				// turn on
+				if (integrator > avgTime/2) {
+					active = true;
+			    }
+			}
+			
+			Wait(APPLIANCE_TICK_TIME);
+		}
+	}
+};
+
+
+float tvProbability[24] = {
+	0.10, 0.05, 0.02, 0.01, 0.02, 0.02,
+	0.03, 0.07, 0.08, 0.08, 0.07, 0.07,
+	0.08, 0.09, 0.10, 0.12, 0.13, 0.15,
+	0.19, 0.30, 0.37, 0.45, 0.42, 0.28,
+};
+float tvTime = 120;
+float tvPower = 0.120;
+
+
+
 // This simulates the power load of the household
 class Load : public Process {
 	void Behavior() {
+		
+		Appliance *appliances[] = {
+			new Appliance(tvProbability, tvTime, tvPower),
+
+		};
+		
+		for (Appliance *a : appliances) {
+			a->Activate();
+		}
+		
 		while (1) {
 			float currentPower = CONST_POWER;
 			
-			int h = getTimeOfDay();
-			if (h>7 and h<23) {
-				currentPower += 0.3;
-			} else {
-				currentPower += 0;
+			for (Appliance *a : appliances) {
+				currentPower += a->readPower();
 			}
 			loadPower = currentPower;
-			Wait(5);
+			Wait(1);
 		}
 	}
 };
 
 
 enum EVMode{ V2G, V1G, DUMB, NONE };
+static double energyUsedDriving;
 
 class EV : public Process {
 	double batteryEnergy = EV_INITIAL_CHARGE;
@@ -95,79 +170,102 @@ class EV : public Process {
 	
 	void Behavior() {
 		while (1) {
-			// available = false;
 			int h = getTimeOfDay();
-			if (h>7 and h<23) {
-				currentPower += 0.3;
-			} else {
-				currentPower += 0;
+			int d = getDayOfWeek();
+			
+			// Go to work on workdays after 7 am
+			if (h==7 && d<5) {
+				available = false;
+				Wait(8*60);
+				// energy lost by travelling
+				// 5 kwh equates to about 25 km
+				// https://ev-database.org/cheatsheet/energy-consumption-electric-car
+				driveDischarge(5);
+				available = true;
 			}
+			
 			Wait(5);
 		}
 	}
 	
 public:
 	// energy in kwh, time in minutes
-	float getEnergy(float energy, float time) {
-		if (!available) {
+	// positive energy goes into car, negative goes from car
+	float exchangeEnergy(float energy, float time) {
+		// Car is not available
+		if (!available || mode == NONE) {
 			return 0;
 		}
 		
-		float needed = energy / EV_DISCHARGE_EFF;
-		
-		if (mode == V2G) {
-			if (batteryEnergy - needed > EV_LOW_LIMIT) {
-				batteryEnergy -= needed;
-				return energy;
-			}
-		}
-
-		return 0;
-	}
-	
-	// energy in kwh, time in minutes
-	float chargeEnergy(float energy, float time) {
-		if (!available) {
-			return 0;
-		}
-		
-		if ((mode == V1G) || (mode == V2G)) {
-			float chargedEnergy;
-			float maxEnergy = time/60 * EV_MAX_CHARGE_POWER;
-			
-			if (energy > EV_MAX_CHARGE_POWER) {
-				chargedEnergy = time/60 * EV_MAX_CHARGE_POWER;
-			} else {
-				time/60 * EV_NORMAL_CHARGE_POWER;
-			}
-			
-			if (batteryEnergy + energy < EV_CAPACITY) {
-				batteryEnergy += energy * EV_CHARGE_EFF;
-				return energy;
-			}
-			
-			return 0;
-		}
-			
-		if (mode == DUMB) {
+		// Charge
+		if (mode == DUMB || batteryEnergy < EV_LOW_LIMIT) {
 			float chargedEnergy = time/60 * EV_NORMAL_CHARGE_POWER;
 			if (batteryEnergy + chargedEnergy * EV_CHARGE_EFF < EV_CAPACITY) {
 				batteryEnergy += chargedEnergy * EV_CHARGE_EFF;
 				return chargedEnergy;
 			}
 		}
+		
+		if (energy > 0) {
+			// Smart charging for V1G or V2G
+			// limit the charging speed by maximum charger power
+			float maxEnergy = time/60 * EV_MAX_CHARGE_POWER;
+			if (energy > maxEnergy) {
+				energy = maxEnergy;
+			}
+			// if the battery has enough free capacity, charge it
+			float charged = energy * EV_CHARGE_EFF; // charging losses
+			if (batteryEnergy + charged < EV_CAPACITY) {
+				batteryEnergy += charged;
+				return energy;
+			}
+			// battery is full
+			return 0;
+			
+		} else {
+			// DISCHARGE, only V2G can do this
+			if (mode == V2G) {
+				// limit the speed by the maximum discarge power
+				float maxEnergy = time/60 * -EV_MAX_DISCHARGE_POWER;
+				if (energy < maxEnergy) {
+					energy = maxEnergy;
+				}
+				
+				// if the battery has enough energy in it, give it back to grid
+				float needed = energy / EV_DISCHARGE_EFF; // discharging losses
+				if (batteryEnergy + needed > EV_LOW_LIMIT) {
+					batteryEnergy += needed;
+					return energy;
+				}
+			}
+		}
 
-		// mode NONE never charges nor discharges
 		return 0;
+	}
+	
+	float readBattery() {
+		if (!available || mode==NONE) {
+			return NAN;
+		}
+		return batteryEnergy;
+	}
+	
+	void driveDischarge(float energy) {
+		float used = (batteryEnergy > energy) ? energy : batteryEnergy;
+		
+		energyUsedDriving += used;
+		batteryEnergy -= used;
 	}
 };
 
-
+// all values in kW
 static float loadPowerMemory[SIM_TIME];
 static float solarPowerMemory[SIM_TIME];
 static float netPowerMemory[SIM_TIME];
-static float chargePowerMemory[SIM_TIME];
-static float recoverPowerMemory[SIM_TIME];
+static float evExchangePowerMemory[SIM_TIME];
+
+static float batteryEnergyMemory[SIM_TIME]; // in kWh
+
 static int measuredSamples = 0;
 
 class Meter : public Process {
@@ -187,18 +285,13 @@ private:
 			
 			float netEnergy = (solarPower - loadPower)*meterInterval/60;
 			
-			float preferredCharge = (netEnergy > 0) ? netEnergy : 0;
-			float chargedEnergy = ev->chargeEnergy(preferredCharge, meterInterval);
-			netEnergy -= chargedEnergy;
-			chargePowerMemory[measuredSamples] = chargedEnergy*60/meterInterval;
+			float exchangedEnergy = ev->exchangeEnergy(netEnergy, meterInterval);
+			evExchangePowerMemory[measuredSamples] = exchangedEnergy*60/meterInterval;
 			
-			float preferredDischarge = (netEnergy < 0) ? -netEnergy : 0;
-			float recoveredEnergy = ev->getEnergy(preferredDischarge, meterInterval);
-			netEnergy += recoveredEnergy;
-			recoverPowerMemory[measuredSamples] = recoveredEnergy*60/meterInterval;
-			
+			netEnergy -= exchangedEnergy;
 			
 			netPowerMemory[measuredSamples] = netEnergy*60/meterInterval;
+			batteryEnergyMemory[measuredSamples] = ev->readBattery();
 			measuredSamples++;
 			Wait(meterInterval);
 		}
@@ -210,14 +303,15 @@ void saveData() {
 	if (f == NULL) {
 		return;
 	}
-	fprintf(f, "loadPower,solarPower,chargePower,recoverPower,netPower\n");
+	fprintf(f, "loadPower,solarPower,exchangePower,batteryEnergy,netPower\n");
 	
 	for (int i=0; i<10000; i++) {
-		fprintf(f, "%lf,%lf,%lf,%lf,%lf\n", loadPowerMemory[i], solarPowerMemory[i], chargePowerMemory[i], recoverPowerMemory[i], netPowerMemory[i]);
+		fprintf(f, "%lf,%lf,%lf,%lf,%lf\n", loadPowerMemory[i], solarPowerMemory[i], evExchangePowerMemory[i], batteryEnergyMemory[i], netPowerMemory[i]);
 	}
 	
 	fclose(f);
 }
+
 
 void printMetrics() {
 	double netEnergyDrawn = 0;
@@ -231,8 +325,13 @@ void printMetrics() {
 		
 		energyGenerated += solarPowerMemory[i] * meterInterval/60;
 		energyConsumed += loadPowerMemory[i] * meterInterval/60;
-		energyCharged += chargePowerMemory[i] * meterInterval/60;
-		energyRecovered += recoverPowerMemory[i] * meterInterval/60;
+		
+		float ex = evExchangePowerMemory[i] * meterInterval/60;
+		if (ex > 0) {
+			energyCharged += ex;
+		} else {
+			energyRecovered -= ex;
+		}
 		
 		float ne = netPowerMemory[i] * meterInterval/60;
 		
@@ -249,6 +348,8 @@ void printMetrics() {
 	printf("Energy consumed: %lf MWh\n", energyConsumed/1000);
 	printf("Energy transferred into EV: %lf MWh\n", energyCharged/1000);
 	printf("Energy recovered from EV: %lf MWh\n", energyRecovered/1000);
+	printf("Energy used for driving the EV: %lf MWh\n", energyUsedDriving/1000);
+
 }
 
 
@@ -258,6 +359,7 @@ int main() {
 	(new Load)->Activate();
 	(new Solar)->Activate();
 	EV *ev = new EV;
+	ev->Activate();
 	Meter *meter = new Meter(ev);
 	meter->Activate();
 		
