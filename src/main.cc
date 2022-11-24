@@ -90,8 +90,13 @@ private:
 	float *probability;
 	float avgTime;
 	
+	float intStart;
+	float intStop;
+	
 	void Behavior() {
 		float integrator = 0;
+		float intStart = Uniform(0, avgTime);
+		float intStop = Uniform(-avgTime, 0);
 		
 		while (1) {
 			// read probability of being active at this time
@@ -106,13 +111,15 @@ private:
 			// There could be added some random element
 			if (active) {
 				// turn off
-				if (integrator < -avgTime/2) {
+				if (integrator < intStop) {
 					active = false;
+					intStart = Uniform(0, avgTime);
 				}
 			} else {
 				// turn on
-				if (integrator > avgTime/2) {
+				if (integrator > intStart) {
 					active = true;
+					intStop = Uniform(-avgTime, 0);
 			    }
 			}
 			
@@ -132,14 +139,67 @@ float tvTime = 120;
 float tvPower = 0.120;
 
 
+float foodProbability[24] = {
+	0.01, 0.01, 0.01, 0.01, 0.01, 0.01,
+	0.02, 0.05, 0.06, 0.04, 0.04, 0.02,
+	0.05, 0.02, 0.02, 0.02, 0.06, 0.11,
+	0.11, 0.07, 0.03, 0.02, 0.01, 0.01,
+};
+
+
+float computerProbability[24] = {
+	0.01, 0.00, 0.00, 0.00, 0.00, 0.00,
+	0.02, 0.02, 0.02, 0.02, 0.02, 0.02,
+	0.02, 0.02, 0.02, 0.02, 0.02, 0.02,
+	0.03, 0.03, 0.03, 0.02, 0.02, 0.02,
+};
+
+
+float cleanProbability[24] = {
+	0.00, 0.00, 0.00, 0.00, 0.00, 0.00,
+	0.01, 0.02, 0.07, 0.10, 0.07, 0.06,
+	0.05, 0.02, 0.02, 0.02, 0.02, 0.02,
+	0.02, 0.01, 0.01, 0.00, 0.00, 0.00,
+};
+
+float washClothesProbability[24] = {
+	0.00, 0.00, 0.00, 0.00, 0.00, 0.00,
+	0.02, 0.02, 0.02, 0.02, 0.02, 0.02,
+	0.02, 0.02, 0.02, 0.02, 0.02, 0.02,
+	0.02, 0.02, 0.01, 0.01, 0.00, 0.00,
+};
+
+
 
 // This simulates the power load of the household
 class Load : public Process {
+	int numPeople = 4;
+	float tvProbScaled[24];
+	float microwaveScaled[24];
+	
+	void calculateProbabilities() {
+		for (int i=0; i<24; i++) {
+			tvProbScaled[i] = pow(tvProbability[i], numPeople);
+		}
+		
+		for (int i=0; i<24; i++) {
+			microwaveScaled[i] = foodProbability[i] * numPeople;
+		}
+	}
+	
 	void Behavior() {
+		calculateProbabilities();
 		
 		Appliance *appliances[] = {
-			new Appliance(tvProbability, tvTime, tvPower),
-
+			new Appliance(tvProbScaled, tvTime, tvPower), // 1 TV for whole household
+			new Appliance(computerProbability, 360, 0.200), // Gaming PC
+			new Appliance(computerProbability, 360, 0.100), // normal PC
+			new Appliance(computerProbability, 360, 0.040), // laptop
+			new Appliance(computerProbability, 360, 0.020), // laptop
+			new Appliance(microwaveScaled, 5, 0.800), // microwave
+			new Appliance(foodProbability, 45, 2.130), // electric oven
+			new Appliance(cleanProbability, 60, 2), // vacuum
+			new Appliance(washClothesProbability, 120, 1), // clothes washer
 		};
 		
 		for (Appliance *a : appliances) {
