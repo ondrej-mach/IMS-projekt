@@ -32,7 +32,6 @@ const float SOLAR_INSTALLED_POWER = 5; // kWp
 
 // shared variables
 float solarPower; // Power currently generated in kW
-float loadPower = 1; // Power currently drawn in kW
 
 
 // retruns number between 0 and 23
@@ -66,10 +65,53 @@ class Solar : public Process {
 	}
 };
 
+class Load : public Process {
+public:
+	virtual float readPower() = 0;
+};
+
+
+float bedTime = 22;
+
+class LightBulb : public Load {
+public:
+	LightBulb(float power) {
+		this->power = power;
+    }
+    
+    float readPower() {
+		return active ? power : 0;
+	}
+	
+private:
+	float power;
+	bool active;
+	constexpr static int duskHour[12] = {17,18,18,20,21,22,22,21,20,18,18,17};
+	
+	void Behavior() {
+		while (1) {
+			int h = getTimeOfDay();
+			int timeToWait = (duskHour[getMonth()] - h) * 60;
+			timeToWait = Normal(timeToWait, 30*30);
+			timeToWait = (timeToWait > 0) ? timeToWait : 0;
+			Wait(timeToWait);
+			
+			active = true;
+			h = getTimeOfDay();
+			timeToWait = (bedTime - h) * 60;
+			timeToWait = Normal(timeToWait, 30*30);
+			timeToWait = (timeToWait > 0) ? timeToWait : 0;
+			Wait(timeToWait);
+			active = false;
+		}
+	}
+	
+};
+
 
 const float APPLIANCE_TICK_TIME = 1;
 
-class Appliance : public Process {
+class Appliance : public Load {
 public:
 	// probability is array of 24 values (for each hour in day)
 	// avgTime is mean time of using this appliance
@@ -172,7 +214,8 @@ float washClothesProbability[24] = {
 
 
 // This simulates the power load of the household
-class Load : public Process {
+class Household : public Load {
+	float loadPower = 0;
 	int numPeople = 4;
 	float tvProbScaled[24];
 	float microwaveScaled[24];
@@ -190,7 +233,7 @@ class Load : public Process {
 	void Behavior() {
 		calculateProbabilities();
 		
-		Appliance *appliances[] = {
+		Load *appliances[] = {
 			new Appliance(tvProbScaled, tvTime, tvPower), // 1 TV for whole household
 			new Appliance(computerProbability, 360, 0.200), // Gaming PC
 			new Appliance(computerProbability, 360, 0.100), // normal PC
@@ -200,22 +243,34 @@ class Load : public Process {
 			new Appliance(foodProbability, 45, 2.130), // electric oven
 			new Appliance(cleanProbability, 60, 2), // vacuum
 			new Appliance(washClothesProbability, 120, 1), // clothes washer
+			new LightBulb(0.008),
+			new LightBulb(0.008),
+			new LightBulb(0.008),
+			new LightBulb(0.012),
+			new LightBulb(0.012),
+			new LightBulb(0.015),
 		};
 		
-		for (Appliance *a : appliances) {
+		for (auto a : appliances) {
 			a->Activate();
 		}
 		
 		while (1) {
 			float currentPower = CONST_POWER;
 			
-			for (Appliance *a : appliances) {
+			for (auto a : appliances) {
 				currentPower += a->readPower();
 			}
 			loadPower = currentPower;
 			Wait(1);
 		}
 	}
+	
+public:
+	float readPower() {
+		return loadPower;
+	}
+	
 };
 
 
@@ -330,20 +385,22 @@ static int measuredSamples = 0;
 
 class Meter : public Process {
 	EV *ev;
+	Load *household;
 	
 public:
-	Meter(EV *vehicle) {
+	Meter(EV *vehicle, Load *household) {
 		ev = vehicle;
+		this->household = household;
     }
 	
 private:
 	void Behavior() {
 		while (measuredSamples < SIM_TIME) {
-			loadPowerMemory[measuredSamples] = loadPower;
+			loadPowerMemory[measuredSamples] = household->readPower();
 			solarPowerMemory[measuredSamples] = solarPower;
 			
 			
-			float netEnergy = (solarPower - loadPower)*meterInterval/60;
+			float netEnergy = (solarPower - household->readPower())*meterInterval/60;
 			
 			float exchangedEnergy = ev->exchangeEnergy(netEnergy, meterInterval);
 			evExchangePowerMemory[measuredSamples] = exchangedEnergy*60/meterInterval;
@@ -416,11 +473,12 @@ void printMetrics() {
 int main() {
 	Init(SIM_START_TIME, SIM_END_TIME); // Time in minutes
 	
-	(new Load)->Activate();
+	Household *household = new Household;
 	(new Solar)->Activate();
 	EV *ev = new EV;
 	ev->Activate();
-	Meter *meter = new Meter(ev);
+	household->Activate();
+	Meter *meter = new Meter(ev, household);
 	meter->Activate();
 		
 	Run();
