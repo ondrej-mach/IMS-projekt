@@ -6,10 +6,10 @@
 // Simulation parameters
 const int SIM_START_TIME = 0; // minutes
 const int SIM_END_TIME = 365*24*60; // minutes
-const int SIM_TIME = SIM_END_TIME - SIM_START_TIME;
+const int meterInterval = 2; // minute
+const int CAPTURED_SAMPLES = (SIM_END_TIME - SIM_START_TIME) / 2;
 
-const float meterInterval = 2; // minute
-
+const int EXPORT_SAMPLES = CAPTURED_SAMPLES;
 
 // EV
 const float EV_CAPACITY = 50; // kWh
@@ -92,14 +92,14 @@ private:
 		while (1) {
 			int h = getTimeOfDay();
 			int timeToWait = (duskHour[getMonth()] - h) * 60;
-			timeToWait = Normal(timeToWait, 30*30);
+			timeToWait = Normal(timeToWait, 15*15);
 			timeToWait = (timeToWait > 0) ? timeToWait : 0;
 			Wait(timeToWait);
 			
 			active = true;
 			h = getTimeOfDay();
 			timeToWait = (bedTime - h) * 60;
-			timeToWait = Normal(timeToWait, 30*30);
+			timeToWait = Normal(timeToWait, 15*15);
 			timeToWait = (timeToWait > 0) ? timeToWait : 0;
 			Wait(timeToWait);
 			active = false;
@@ -374,12 +374,12 @@ public:
 };
 
 // all values in kW
-static float loadPowerMemory[SIM_TIME];
-static float solarPowerMemory[SIM_TIME];
-static float netPowerMemory[SIM_TIME];
-static float evExchangePowerMemory[SIM_TIME];
+static float loadPowerMemory[CAPTURED_SAMPLES];
+static float solarPowerMemory[CAPTURED_SAMPLES];
+static float netPowerMemory[CAPTURED_SAMPLES];
+static float evExchangePowerMemory[CAPTURED_SAMPLES];
 
-static float batteryEnergyMemory[SIM_TIME]; // in kWh
+static float batteryEnergyMemory[CAPTURED_SAMPLES]; // in kWh
 
 static int measuredSamples = 0;
 
@@ -395,7 +395,7 @@ public:
 	
 private:
 	void Behavior() {
-		while (measuredSamples < SIM_TIME) {
+		while (measuredSamples < CAPTURED_SAMPLES) {
 			loadPowerMemory[measuredSamples] = household->readPower();
 			solarPowerMemory[measuredSamples] = solarPower;
 			
@@ -422,7 +422,7 @@ void saveData() {
 	}
 	fprintf(f, "loadPower,solarPower,exchangePower,batteryEnergy,netPower\n");
 	
-	for (int i=0; i<10000; i++) {
+	for (int i=0; i<EXPORT_SAMPLES; i++) {
 		fprintf(f, "%lf,%lf,%lf,%lf,%lf\n", loadPowerMemory[i], solarPowerMemory[i], evExchangePowerMemory[i], batteryEnergyMemory[i], netPowerMemory[i]);
 	}
 	
