@@ -68,7 +68,7 @@ Modul domácnosti generuje spotřebovaný výkon, který je také závislý na �
 V rámci tohoto modulu je náhodně generována výroba energie.
 Jediným výstupem je tudíž proměnná, ve které je uložen výkon elektrárny v daném čase.
 Vstupem pro toto generování je čas, podle kterého je určeno roční období.
-To má v realité významný vliv na výkon elektrárny, proto je nutné ho brát v úvahu.
+To má v realitě významný vliv na výkon elektrárny, proto je nutné ho brát v úvahu.
 
 
 Tady napsat, jak se počítá výkon podle období.
@@ -101,8 +101,8 @@ Dynamická spotřeba je zcela nutná, aby byl model validní.
 V případě, že by byla modelována pouze konstantní spotřeba,
 celková spotřeba by mohla být stejná, ale spotřeba ze sítě resp. dodávka do sítě by se výrazně lišila.
 
-Modul domácnosti periodicky scítá výkon všech spotřebičů a ukládá ho do jedné sdílené proměnné.
-Toto je jeho výstup, který je monitorován monitorovacím zařízemním.
+Modul domácnosti periodicky sčítá výkon všech spotřebičů a ukládá ho do jedné sdílené proměnné.
+Toto je jeho výstup, který je monitorován monitorovacím zařízením.
 
 
 \subsection{Elektrické vozidlo}
@@ -129,7 +129,7 @@ Nabíjení vozidla a dodávání energie do sítě je implementováno metodami t
 Objekt EV má proměnnou, ve které je současná energie, která je nabita v baterii.
 Měřící nástroj může vozidlu poslat, že chce v následujícím měřícím úseku nabít do baterie nějaké množství energie.
 Tato funkce vrátí skutečné množství energie, které bylo spotřebované vozidlem.
-Pokud je množství energie za davý čas příliš velké,
+Pokud je množství energie za daný čas příliš velké,
 vozidlo se nemůže nabíjet tak rychle, spotřebuje pouze množství omezené maximálním výkonem nabíječky.
 Dodávka energie do sítě se řídí stejným pravidlem.
 
@@ -137,7 +137,7 @@ Pokud je EV na minimálním limitu baterie, nedodává již žádnou energii do 
 Pokud je naopak baterie plně nabitá, vozidlo nespotřebovává žádnou energii.
 
 \subsection{Měřící zařízení}
-Měřící zařízení je implementov8no jeko proces knihovny SIMLIB.
+Měřící zařízení je implementováno jako proces knihovny SIMLIB.
 Tento proces provádí v pravidelných intervalech měření spořeby a výroby elektrické energie.
 Pokud toto zařízení zjistí nadbytek energie v síti, dá EV možnost tuto energii spotřebovat.
 Pokud je v síti naopak nedostatek energie a bylo by nutné ji brát od dodavatele, požádá EV o dodávku energie.
