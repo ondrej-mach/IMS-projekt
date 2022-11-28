@@ -29,6 +29,7 @@ const float CONST_POWER = 0.1; // kW
 
 // Solar 
 const float SOLAR_INSTALLED_POWER = 5; // kWp
+const float SOLAR_EFF_DETERIORATION = 0.005; // kWp
 
 // shared variables
 float solarPower; // Power currently generated in kW
@@ -44,22 +45,140 @@ int getDayOfWeek() {
 	return (int(Time)/60/24) % 7;
 }
 
+const int daysInMonth[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31,};
+
 // returns number between 0 and 11
-int getMonth() {
-	// Kind of inaccurate but good enough for weather simulation
-	return ((int(Time)/60/24) % 365) / 30;
+int getDayOfMonth()
+{
+	int temp = (int(Time) / 60 / 24);
+	int month = 0;
+	while (true)
+	{
+		if (temp <= daysInMonth[month])
+		{
+			break;
+		}
+		temp -= daysInMonth[month];
+		month++;
+	}
+	return (temp);
 }
 
+int getMonth()
+{
+	int temp = (int(Time) / 60 / 24);
+	int month = 0;
+	while (true)
+	{
+		if (temp <= daysInMonth[month])
+		{
+			break;
+		}
+		temp -= daysInMonth[month];
+		month++;
+	}
+	return (month);
+}
+
+// data from https://www.chmi.cz/historicka-data/pocasi/uzemni-teploty?l=en#
+// location: Brno
+const float yearlyTemp[24] = {-1.2, 0.0, 2.1, 5.0, 9.8, 18.1, 17.8, 15.4, 13.4, 7.2, 2.7, 0.6,};
+
+// data from https://weather-and-climate.com/average-monthly-hours-Sunshine,Brno,Czech-Republic
+const int monthlySunshineHours[12] = {55, 82, 139, 210, 225, 247, 245, 244, 177, 113, 61, 45,};
+
+// data from https://weather-and-climate.com/average-monthly-hours-Sunshine,Brno,Czech-Republic
+const int monthlyChanceToRain[12] = {20, 17, 23, 20, 27, 30, 30, 23, 20, 20, 23, 27,};
+
+// data from https://www.johnnyspraguetours.com/when-sunrise-sunset-prague/
+// date is in the middle of the month
+const float monthlySunrise[12] = 
+	{7.92, 7.22, 6.27, 6.15, 
+	5.27, 4.87, 5.17, 5.87, 
+	6.65, 7.42, 7.27, 7.92,};
+
+const float monthlySunset[12] = 
+	{16.48, 17.35, 18.12, 19.95, 
+	20.72, 21.23, 21.1, 20.33, 
+	19.25, 18.17, 16.28, 16,};
+
+// https://www.researchgate.net/figure/Solar-cell-efficiency-vs-Temperature-plotted-for-the-two-cells-with-trap-densities-of_fig7_237824433
+float effDropTemp() {
+	// data might be outdated
+	int month =	getMonth();
+	return yearlyTemp[month] * -0.00055 + 0.2322;
+}
+
+float effDropDeterioration(float efficiency) {
+	// Reduce efficiency by 0.5% per year
+	return efficiency - ((SOLAR_EFF_DETERIORATION / 365) * (int(Time) / (24 * 60)));
+}
+
+float getEfficencyDrop() {
+	float base_eff = effDropTemp();
+	float eff = effDropDeterioration(base_eff);
+	return eff;
+}
+
+float getSunnyDays(int month) {
+	float dayLen = monthlySunset[month] - monthlySunrise[month];
+	float sunnyDays = monthlySunshineHours[month] / dayLen;
+	return sunnyDays;
+}
+
+// basic sinusoidal model of solar power generated
+float getSolarPower(int h, float sunrise, float sunset, float midday)
+{
+	float eff = getEfficencyDrop();
+	// only sunny hours
+	if (h > (sunrise - 1.0) and h < (sunset + 1.0))
+	{
+		solarPower = eff * SOLAR_INSTALLED_POWER / 10;
+		if (h > sunrise and h < sunset)
+		{
+			if (h > midday)
+			{
+				solarPower = eff * SOLAR_INSTALLED_POWER * pow((1 - (h - midday) / (sunset - midday)), 0.2);
+			}
+			else
+			{
+				solarPower = eff * SOLAR_INSTALLED_POWER * pow((h - sunrise) / (midday - sunrise), 0.2);
+			}
+		}
+	}
+	else
+	{
+		// TODO maybe add moonlight?
+		return 0;
+	}
+	return solarPower;
+}
+
+static float cloudyDays = 0;
+
 // Solar power system
-class Solar : public Process {
+class Solar : public Process
+{
 	void Behavior() {
 		while (1) {
 			int h = getTimeOfDay();
-			if (h>8 and h<18) {
-				solarPower = 0.3 * SOLAR_INSTALLED_POWER;
-			} else {
-				solarPower = 0;
-			}
+			int month = getMonth();
+			float sunrise = monthlySunrise[month];
+			float sunset = monthlySunset[month];
+			float midday = (sunset + sunrise) / 2;
+
+			int day = getDayOfMonth();
+
+			// get base solar power
+			solarPower = getSolarPower(h, sunrise, sunset, midday);
+			/*
+			int sunnyDays = int(getSunnyDays(month));
+			int rainyDays = daysInMonth[month] - sunnyDays;
+			int *rainyDaysArray[daysInMonth[month]] = {};
+			for (i = 0; i < rainyDays; i++) {
+				rainyDaysArray.push_back
+			}*/
+
 			Wait(5);
 		}
 	}
