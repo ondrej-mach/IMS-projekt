@@ -47,7 +47,7 @@ int getDayOfWeek() {
 
 const int daysInMonth[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31,};
 
-// returns number between 0 and 11
+// returns number between 1 and 31 
 int getDayOfMonth()
 {
 	int temp = (int(Time) / 60 / 24);
@@ -61,9 +61,10 @@ int getDayOfMonth()
 		temp -= daysInMonth[month];
 		month++;
 	}
-	return (temp);
+	return (temp != 0) ? temp : 1;
 }
 
+// returns number between 0 and 11
 int getMonth()
 {
 	int temp = (int(Time) / 60 / 24);
@@ -102,11 +103,11 @@ const float monthlySunset[12] =
 	20.72, 21.23, 21.1, 20.33, 
 	19.25, 18.17, 16.28, 16,};
 
-// https://www.researchgate.net/figure/Solar-cell-efficiency-vs-Temperature-plotted-for-the-two-cells-with-trap-densities-of_fig7_237824433
+//https://www.cleanenergyreviews.info/blog/most-efficient-solar-panels
 float effDropTemp() {
-	// data might be outdated
-	int month =	getMonth();
-	return yearlyTemp[month] * -0.00055 + 0.2322;
+	// TODO efficiency cannot go above 100%
+	int month = getMonth();
+	return ((-3.0 * yearlyTemp[month]) / 10.0 + 107.5) / 100.0;
 }
 
 float effDropDeterioration(float efficiency) {
@@ -133,16 +134,16 @@ float getSolarPower(int h, float sunrise, float sunset, float midday)
 	// only sunny hours
 	if (h > (sunrise - 1.0) and h < (sunset + 1.0))
 	{
-		solarPower = eff * SOLAR_INSTALLED_POWER / 10;
+		solarPower = /*eff **/ SOLAR_INSTALLED_POWER / 10;
 		if (h > sunrise and h < sunset)
 		{
 			if (h > midday)
 			{
-				solarPower = eff * SOLAR_INSTALLED_POWER * pow((1 - (h - midday) / (sunset - midday)), 0.2);
+				solarPower = /*eff **/ SOLAR_INSTALLED_POWER * pow((1 - (h - midday) / (sunset - midday)), 0.2);
 			}
 			else
 			{
-				solarPower = eff * SOLAR_INSTALLED_POWER * pow((h - sunrise) / (midday - sunrise), 0.2);
+				solarPower = /*eff **/ SOLAR_INSTALLED_POWER * pow((h - sunrise) / (midday - sunrise), 0.2);
 			}
 		}
 	}
@@ -154,7 +155,14 @@ float getSolarPower(int h, float sunrise, float sunset, float midday)
 	return solarPower;
 }
 
-static float cloudyDays = 0;
+float randomizeSolarPower(float solarPower)
+{
+	// generate float from 0.0 to 1.0
+	float r = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+	return r * solarPower;
+}
+
+static int cloudyDaysArray[31];
 
 // Solar power system
 class Solar : public Process
@@ -162,23 +170,36 @@ class Solar : public Process
 	void Behavior() {
 		while (1) {
 			int h = getTimeOfDay();
-			int month = getMonth();
-			float sunrise = monthlySunrise[month];
-			float sunset = monthlySunset[month];
+			int d = getDayOfMonth();
+			int m = getMonth();
+			float sunrise = monthlySunrise[m];
+			float sunset = monthlySunset[m];
 			float midday = (sunset + sunrise) / 2;
-
-			int day = getDayOfMonth();
+			int daysMonth = daysInMonth[m];
 
 			// get base solar power
 			solarPower = getSolarPower(h, sunrise, sunset, midday);
-			/*
-			int sunnyDays = int(getSunnyDays(month));
-			int rainyDays = daysInMonth[month] - sunnyDays;
-			int *rainyDaysArray[daysInMonth[month]] = {};
-			for (i = 0; i < rainyDays; i++) {
-				rainyDaysArray.push_back
-			}*/
 
+			int sunnyDays = int(getSunnyDays(m)) + 1;
+			int cloudyDays = daysMonth - sunnyDays;
+		
+			int i = 0;
+			if ((d == 1) and (h == 0)) {
+				for (i; i < cloudyDays; i++)
+				{
+					cloudyDaysArray[i] = rand() % daysMonth;
+				}
+				cloudyDaysArray[i + 1] = 0;
+			}
+
+			i = 0;
+			while (cloudyDaysArray[i]) {
+				if (d == cloudyDaysArray[i]) {
+					solarPower = randomizeSolarPower(solarPower);
+					break;
+				}
+				i++;
+			}
 			Wait(5);
 		}
 	}
