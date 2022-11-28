@@ -4,6 +4,10 @@
 \usepackage{csquotes}
 \usepackage{graphicx}
 \usepackage{textcomp}
+\usepackage{caption}
+\usepackage{biblatex}
+\addbibresource{bibliography.bib}
+
 % rovnice zarovnávat doleva
 \usepackage[fleqn]{amsmath}
 
@@ -78,13 +82,13 @@ Tady napsat, jak se počítá výkon podle období.
 Modul domácnosti má za úkol náhodně modelovat spotřebu elektrické energie tak,
 aby se co nejblíže podobal reálné domácnosti.
 Má tedy jedinou výstupní proměnnou, která udává výkon spotřebovaný v daném čase.
-Spotřeba domácnosti závisí na čase, ze kterého je spočítán den v týdnu a roční období.
 
 Spotřeba v domácnosti je zcela nezávislá na výkonu elektrárny v daném čase.
 Zde by mohl být drobný rozdíl oproti realitě.
 Členové domácnosti mohou záměrně spotřebovávat více elektřiny, pokud má zrovna elektrárna přebytečný výkon.
 Dobrý příklad tohoto by bylo zapnutí elektrické trouby, když je elektrárna v provozu.
 
+\subsubsection{Implementace}
 Domácnost je modelována jako proces knihovny SIMLIB.
 Spotřeba je počítána jako součet konstantní a dynamické spotřeby.
 Konstantní představuje výkon, který je odebírán vždy.
@@ -94,16 +98,51 @@ Dále je do této části započítána pohotovostní spotřeba televizí, monit
 Dynamická spotřeba představuje spotřebiče, které spotřebovávají energii pouze občas.
 Toto je naprostá většina spotřebičů používaných v domácnosti.
 Patřila by sem například varná konvice, elektrický sporák, televize, počítač a mnoho dalších.
-Každý spotřebič má zadáno, mezi kterými časy se spouští a jaký podíl této doby je průměrně aktivní. [TODO mozna i neco dalsiho]
-Podle těchto parametrů náhodně generuje zátěž.
 
 Dynamická spotřeba je zcela nutná, aby byl model validní.
 V případě, že by byla modelována pouze konstantní spotřeba,
 celková spotřeba by mohla být stejná, ale spotřeba ze sítě resp. dodávka do sítě by se výrazně lišila.
 
-Modul domácnosti periodicky sčítá výkon všech spotřebičů a ukládá ho do jedné sdílené proměnné.
-Toto je jeho výstup, který je monitorován monitorovacím zařízením.
+Modul domácnosti periodicky sčítá výkon všech spotřebičů, který je monitorován monitorovacím zařízením.
+Tato spotřeba je zobrazena na obrázku ~\ref{fig:load_power},
+kde jedna křivka představuje okamžitou spotřebu a druhá šestihodinový pohyblivý průměr.
 
+\begin{figure}
+\includegraphics[width=\linewidth]{img/load_power.pdf}
+\caption{Spotřeba domácnosti v rozsahu 5 dní}
+\label{fig:load_power}
+\end{figure}
+
+\subsubsection{Spotřebiče}
+Všechny spotřebiče jsou implementovány jako C++ objekty, přičemž jejich třídy vždy dědí ze třídy \texttt{Load}.
+Rozhraní \texttt{Load} poskytuje metodu \texttt{readPower}, která vrací současný výkon spotřebiče.
+Díky ní mohou být všechny odečítány modulem domácnosti.
+Spotřebiče jsou implementovány třídami \texttt{Appliance} a \texttt{LightBulb}.
+
+Spototřebiče třídy \texttt{Appliance} mají jako parametry výkon, průměrný čas běhu a pravděpodobnosti, že budou zapnuté pro každou hodinu.
+Pravděpodobnosti jsou implementovány jako pole 24 položek typu float,
+každá z nich určuje pravděpodobnost, že bude daný spotřebič v tu hodinu aktivní.
+Konkrétní hodnoty byly převzaty ze studie. \cite{TORRITI201737}
+
+Žárovky třídy \texttt{LightBulb} jsou implementovány tak,
+že
+
+\subsubsection{Verifikace modelu}
+
+Pro ověření správné spotřeby v závislosti na čase byl sestrojen histogram,
+který zobrazuje průměrnou spotřebu v každé hodině dne (Obrázek \ref{fig:average_day_load}).
+Data jsou zprůměrována z 1 simulovaného roku roku.
+Implementovaný model víceméně koresponduje s předlohou \cite{TORRITI201737}.
+
+Celá domácnost spotřebuje 3.27 MWh za rok, což zhruba odpovídá průměrné spotřebě domácnosti v České Republice\cite{CEZ}.
+
+
+
+\begin{figure}
+\includegraphics[width=\linewidth]{img/average_day_load.pdf}
+\caption{Průměrná spotřeba domácnosti v závislosti na čase}
+\label{fig:average_day_load}
+\end{figure}
 
 \subsection{Elektrické vozidlo}
 Elektrické vozidlo je implementováno jako další proces knihovny SIMLIB.
@@ -154,6 +193,8 @@ Všechny naměřené údaje jsou ukládány do sdíleného pole, aby šly přeč
 \section{Závěr}
 
 Provedená simulace dokázala, že ...
+
+\printbibliography
 
 \end{document}
 
