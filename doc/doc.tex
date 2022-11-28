@@ -82,6 +82,7 @@ Tady napsat, jak se počítá výkon podle období.
 Modul domácnosti má za úkol náhodně modelovat spotřebu elektrické energie tak,
 aby se co nejblíže podobal reálné domácnosti.
 Má tedy jedinou výstupní proměnnou, která udává výkon spotřebovaný v daném čase.
+Spotřeba domácnosti závisí na čase, ze kterého je spočítán den v týdnu a roční období.
 
 Spotřeba v domácnosti je zcela nezávislá na výkonu elektrárny v daném čase.
 Zde by mohl být drobný rozdíl oproti realitě.
@@ -98,6 +99,8 @@ Dále je do této části započítána pohotovostní spotřeba televizí, monit
 Dynamická spotřeba představuje spotřebiče, které spotřebovávají energii pouze občas.
 Toto je naprostá většina spotřebičů používaných v domácnosti.
 Patřila by sem například varná konvice, elektrický sporák, televize, počítač a mnoho dalších.
+Každý spotřebič má zadáno, mezi kterými časy se spouští a jaký podíl této doby je průměrně aktivní. [TODO mozna i neco dalsiho]
+Podle těchto parametrů náhodně generuje zátěž.
 
 Dynamická spotřeba je zcela nutná, aby byl model validní.
 V případě, že by byla modelována pouze konstantní spotřeba,
