@@ -103,11 +103,33 @@ const float monthlySunset[12] =
 	20.72, 21.23, 21.1, 20.33, 
 	19.25, 18.17, 16.28, 16,};
 
-//https://www.cleanenergyreviews.info/blog/most-efficient-solar-panels
-float effDropTemp() {
-	// TODO efficiency cannot go above 100%
-	int month = getMonth();
-	return ((-3.0 * yearlyTemp[month]) / 10.0 + 107.5) / 100.0;
+const float monthlyCoef[12] = {0.41,0.83,0.91,0.95,0.95,1,1,0.95,0.83,0.75,0.52,0.22,};
+
+float effByMonth() {
+	int m = getMonth();
+	int d = getDayOfMonth();
+	int daysM = daysInMonth[m];
+	float dist = d - daysInMonth[m] / 2;
+	int n;
+	if (dist > 0)
+	{
+		n = (m + 1) % 12;
+	}
+	else {
+		n = (m == 0) ? 11 : (m - 1);
+		dist *= -1;
+	}
+	int daysN = daysInMonth[n];
+	float q = ((daysM + daysN) / 2);
+	float x = q - dist;
+	return (dist * monthlyCoef[n] + x * monthlyCoef[m]) / q;
+}
+
+// https://www.cleanenergyreviews.info/blog/most-efficient-solar-panels
+float effDropTemp()
+{
+	int m = getMonth();
+	return ((-3.0 * yearlyTemp[m]) / 10.0 + 107.5) / 100.0 * effByMonth();
 }
 
 float effDropDeterioration(float efficiency) {
@@ -118,6 +140,7 @@ float effDropDeterioration(float efficiency) {
 float getEfficencyDrop() {
 	float base_eff = effDropTemp();
 	float eff = effDropDeterioration(base_eff);
+	int month = getMonth();
 	return eff;
 }
 
@@ -134,32 +157,34 @@ float getSolarPower(int h, float sunrise, float sunset, float midday)
 	// only sunny hours
 	if (h > (sunrise - 1.0) and h < (sunset + 1.0))
 	{
-		solarPower = /*eff **/ SOLAR_INSTALLED_POWER / 10;
+		solarPower = eff * SOLAR_INSTALLED_POWER / 10;
 		if (h > sunrise and h < sunset)
 		{
 			if (h > midday)
 			{
-				solarPower = /*eff **/ SOLAR_INSTALLED_POWER * pow((1 - (h - midday) / (sunset - midday)), 0.2);
+				solarPower = eff * SOLAR_INSTALLED_POWER * pow((1 - (h - midday) / (sunset - midday)), 0.2);
 			}
 			else
 			{
-				solarPower = /*eff **/ SOLAR_INSTALLED_POWER * pow((h - sunrise) / (midday - sunrise), 0.2);
+				solarPower = eff * SOLAR_INSTALLED_POWER * pow((h - sunrise) / (midday - sunrise), 0.2);
 			}
 		}
 	}
 	else
 	{
-		// TODO maybe add moonlight?
 		return 0;
 	}
 	return solarPower;
 }
 
-float randomizeSolarPower(float solarPower)
+static int lastValue;
+
+float computeCloudyWeather(float solarPower)
 {
 	// generate float from 0.0 to 1.0
 	float r = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-	return r * solarPower;
+	lastValue = r;
+	return (r * solarPower + lastValue) / 2 * r;
 }
 
 static int cloudyDaysArray[31];
@@ -195,7 +220,7 @@ class Solar : public Process
 			i = 0;
 			while (cloudyDaysArray[i]) {
 				if (d == cloudyDaysArray[i]) {
-					solarPower = randomizeSolarPower(solarPower);
+					solarPower = computeCloudyWeather(solarPower);
 					break;
 				}
 				i++;

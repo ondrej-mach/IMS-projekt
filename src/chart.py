@@ -8,6 +8,7 @@ meter_tick = 2
 hour = 60/meter_tick
 day = hour*24
 week = day*7
+month = 30*day
 
 
 def plot_all_power(df, filename='all_power.pdf'):
@@ -35,7 +36,17 @@ def plot_solar(df, filename='solar_power.pdf'):
     plt.grid(True)
     plt.savefig(filename)
     plt.clf()
+    
 
+def plot_solar_hist(df, filename='solar_power_hist.pdf'):
+    monthAvg = df.groupby([df['date'].dt.month])['solarPower'].sum()
+    plt.bar(np.arange(12), monthAvg)
+    # plt.show()
+    plt.grid(True)
+    plt.savefig(filename)
+    plt.clf()
+
+# histogram for each month sum in kW
 
 def plot_load(df, filename='load_power.pdf'):
     plt.plot(df['loadPower'], label='Load power')
@@ -64,5 +75,6 @@ plot_load(df.loc[week:week+5*day])
 plot_average_day_load(df)
 
 plot_battery(df.loc[:2*week])
-plot_solar(df.loc[:week])
+plot_solar(df.loc[:month*12])
+plot_solar_hist(df.loc[:month*12])
 plot_all_power(df.loc[:week])

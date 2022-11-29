@@ -10,6 +10,8 @@ https://www.sciencedirect.com/science/article/pii/S0360544217317863?via%3Dihub
 # Solarni elektrarny
 https://www.ceska-solarni.cz/kalkulacka
 https://climateknowledgeportal.worldbank.org/country/czech-republic/climate-data-historical#:~:text=Average%20annual%20temperature%20fluctuates%20in,average%20is%20-1%20°C.
+https://www.hahasmart.com/blog/3020/how-does-solar-panel-performance-vary-by-season
+http://www.pfbach.dk
 
 ## Krivky pri ruznem pocasi
 https://www.researchgate.net/figure/Solar-power-output-varies-based-on-time-of-day-and-local-weather-conditions_fig1_317055348
