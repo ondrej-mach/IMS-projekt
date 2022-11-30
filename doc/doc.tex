@@ -51,11 +51,23 @@ Přínos této technologie je posouzen podle simulačního modelu, který modelu
 Technologie je poměrně nová a studie na toto téma dochází k různým závěrům, což bylo motivací pro vytvoření tohoto projektu.
 
 \subsection{Technologie Vehicle-to-grid}
+Vehicle to Grid (V2G) je technologie využívající vozidla schopná vyrábět nebo uchovávat elektrickou energii (např. elektrická, hybridní nebo vodíková vozidla).
+Vyžaduje datové spojení mezi vozidlem a nabíjecí stanicí, umožňující monitorovat stav sítě a podle něj modifikovat množství nabíjené elektřiny.
+Umožňuje nečinným vozidlům zapojeným do sítě napájet část nebo celou domácnost anebo dodávat do této sítě v baterii uloženou elektřinu.
+Tím může pomoci redukovat domácnosti využívající tento systém výdaje za elektřinu a také může snížit zatížení sítě.
+V rámci tohoto procesu však dochází k opotřebení baterie, tudíž snížení životnosti vozidla.
+
+\subsection{Režimy Vehicle-to-grid}
+Systém V2G může být nakonfigurován více způsoby.
+V1G, neboli jednosměrné V2G, je režim, kdy vozidlo nemůže dodávat do sítě elektřinu,
+je však schopno určit nejvhodnější časy pro nabíjení ze sítě. To mu umožňuje významně snížit cenu nabíjení, zátěž sítě a využívat větší podíl elektřiny z obnovitelných zdrojů.
+V2B/V2H, neboli vehicle-to-building/home, při tomto režimu je vozidlo schopné omezeně dodávat uloženou energii do budovy/domácnosti v případě fluktuace napští v síti, nebo při výpadcích proudu.
+V2X, jinak také vehicle-to-everything, režim zamšřený na komunikaci s ostatními vozidly nebo infrastrukturou, primárním účelem není kontrola nabíjení, ale efektivita a bezpečnost dopravy.
+V2G - vehicle-to-grid, nebo bi-directional smart charging. Umožňuje dodávat vyráběnou/uchovávanou elektřinu zpět do sítě a tím snížit její zatížení.
 
 \subsection{Předchozí studie}
 
 \section{Simulační model}
-
 Simulační model je logicky rozdělen na domácnost, solární elektrárnu, elektrické vozidlo a měřící zařízení.
 
 \bigskip
@@ -74,7 +86,7 @@ Jediným výstupem je tudíž proměnná, ve které je uložen výkon elektrárn
 Vstupem pro toto generování je čas, podle kterého je určeno roční období.
 To má v realitě významný vliv na výkon elektrárny, proto je nutné ho brát v úvahu.
 
-
+Konkrétními faktory, které mají významný vliv na výrobu elektřiny jsou délka dne, pozice slunce vůči panelu a počasí.
 Tady napsat, jak se počítá výkon podle období.
 
 
@@ -122,7 +134,7 @@ Rozhraní \texttt{Load} poskytuje metodu \texttt{readPower}, která vrací souč
 Díky ní mohou být všechny odečítány modulem domácnosti.
 Spotřebiče jsou implementovány třídami \texttt{Appliance} a \texttt{LightBulb}.
 
-Spototřebiče třídy \texttt{Appliance} mají jako parametry výkon, průměrný čas běhu a pravděpodobnosti, že budou zapnuté pro každou hodinu.
+Spotřebiče třídy \texttt{Appliance} mají jako parametry výkon, průměrný čas běhu a pravděpodobnosti, že budou zapnuté pro každou hodinu.
 Pravděpodobnosti jsou implementovány jako pole 24 položek typu float,
 každá z nich určuje pravděpodobnost, že bude daný spotřebič v tu hodinu aktivní.
 Konkrétní hodnoty byly převzaty ze studie. \cite{TORRITI201737}
