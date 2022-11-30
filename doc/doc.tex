@@ -66,6 +66,7 @@ V2X, jinak také vehicle-to-everything, režim zamšřený na komunikaci s ostat
 V2G - vehicle-to-grid, nebo bi-directional smart charging. Umožňuje dodávat vyráběnou/uchovávanou elektřinu zpět do sítě a tím snížit její zatížení.
 
 \subsection{Předchozí studie}
+Tímto tématem se již v minulosti zabývalo množství odborných studií.
 
 \section{Simulační model}
 Simulační model je logicky rozdělen na domácnost, solární elektrárnu, elektrické vozidlo a měřící zařízení.
@@ -87,8 +88,12 @@ Vstupem pro toto generování je čas, podle kterého je určeno roční období
 To má v realitě významný vliv na výkon elektrárny, proto je nutné ho brát v úvahu.
 
 Konkrétními faktory, které mají významný vliv na výrobu elektřiny jsou délka dne, pozice slunce vůči panelu a počasí.
-Tady napsat, jak se počítá výkon podle období.
-
+Délka dne je určována z dat o východu a západu slunce,
+pozice slunce je určena tabulkou, ve které jsou vypsány efektivity panelů v daných ročních obdobích(nezávislé na počasí - tzn. v tabulce jsou slunečné dny).
+Tato efektivita je modifikována pomocí tabulky s uloženými teplotami během roku a započítáno je zde i opotřebení panelu.
+Počasí je simulováno dle počtu hodin, kdy během měsíce svítí slunce. Ten se vydělí délkou daného dne a tím získáme počet slunečných dní.
+Zatažené dny jsou vybrány náhodně a intenzita zataženosti je také náhodná.
+Ve výsledku elektrárna generuje podobné výkon, jaký by se dal v naší oblasti - Brno očekávat.
 
 \subsection{Domácnost}
 Modul domácnosti má za úkol náhodně modelovat spotřebu elektrické energie tak,
