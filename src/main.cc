@@ -13,14 +13,13 @@ const int CAPTURED_SAMPLES = (SIM_END_TIME - SIM_START_TIME) / 2;
 const int EXPORT_SAMPLES = CAPTURED_SAMPLES;
 
 // EV
-const float EV_CAPACITY = 50; // kWh
-const float EV_INITIAL_CHARGE = 25; // kWh
-const float EV_LOW_LIMIT = 20; // kWh
+const float EV_INITIAL_CHARGE = 20; // kWh
+const float EV_LOW_LIMIT = 15; // kWh
 const float EV_CHARGE_EFF = 0.85;
 const float EV_DISCHARGE_EFF = 0.68;
-const float EV_MAX_CHARGE_POWER = 6; // kW before the losses
-const float EV_NORMAL_CHARGE_POWER = 1.5; // kW, activates when battery
-const float EV_MAX_DISCHARGE_POWER = 6; // kW after the losses
+const float EV_MAX_CHARGE_POWER = 7.4; // kW before the losses
+const float EV_NORMAL_CHARGE_POWER = 2; // kW, activates when battery
+const float EV_MAX_DISCHARGE_POWER = 7.4; // kW after the losses
 
 // Household
 // Stuff, that is on all the time
@@ -449,8 +448,10 @@ static double energyUsedDriving;
 
 class EV : public Process {
 	double batteryEnergy = EV_INITIAL_CHARGE;
-	EVMode mode = V2G;
+	EVMode mode;
 	bool available = true;
+	bool work;
+	float EV_CAPACITY;
 	
 	
 	void Behavior() {
@@ -458,15 +459,17 @@ class EV : public Process {
 			int h = getTimeOfDay();
 			int d = getDayOfWeek();
 			
-			// Go to work on workdays after 7 am
-			if (h==7 && d<5) {
-				available = false;
-				Wait(8*60);
-				// energy lost by travelling
-				// 5 kwh equates to about 25 km
-				// https://ev-database.org/cheatsheet/energy-consumption-electric-car
-				driveDischarge(5);
-				available = true;
+			if (work) {
+				// Go to work on workdays after 7 am
+				if (h==7 && d<5) {
+					available = false;
+					Wait(8*60);
+					// energy lost by travelling
+					// 5 kwh equates to about 25 km
+					// https://ev-database.org/cheatsheet/energy-consumption-electric-car
+					driveDischarge(5);
+					available = true;
+				}
 			}
 			
 			Wait(5);
@@ -474,6 +477,12 @@ class EV : public Process {
 	}
 	
 public:
+	EV(EVMode mode=V2G, float batteryCapacity=40, bool work=true) {
+		this->EV_CAPACITY = batteryCapacity;
+		this->mode = mode;
+		this->work = work;
+	}
+	
 	// energy in kwh, time in minutes
 	// positive energy goes into car, negative goes from car
 	float exchangeEnergy(float energy, float time) {
@@ -640,12 +649,23 @@ void printMetrics() {
 }
 
 
-int main() {
+int main(int argc, char **argv) {
+	if (argc != 4) {
+		fprintf(stderr, "usage: %s {v2g|v1g|normal|no} {battery_kwh} {work|no}", argv[0]);
+		return 1;
+	}
+	EVMode evMode = NONE;
+	if (!strcmp(argv[1], "v2g")) evMode = V2G;
+	if (!strcmp(argv[1], "v1g")) evMode = V1G;
+	if (!strcmp(argv[1], "normal")) evMode = DUMB;
+	int batteryCapacity = atoi(argv[2]);
+	bool work = !strcmp(argv[3], "work");
+	
 	Init(SIM_START_TIME, SIM_END_TIME); // Time in minutes
 	
 	Household *household = new Household;
 	(new Solar)->Activate();
-	EV *ev = new EV;
+	EV *ev = new EV(evMode, batteryCapacity, work);
 	ev->Activate();
 	household->Activate();
 	Meter *meter = new Meter(ev, household);
