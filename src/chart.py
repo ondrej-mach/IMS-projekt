@@ -8,7 +8,8 @@ meter_tick = 2
 hour = 60/meter_tick
 day = hour*24
 week = day*7
-month = 30*day
+month = 30.4*day
+year = 12*month
 
 
 def plot_all_power(df, filename='all_power.pdf'):
@@ -30,8 +31,8 @@ def plot_battery(df, filename='battery_energy.pdf'):
     plt.clf()
 
 
-def plot_solar(df, filename='solar_power.pdf'):
-    plt.plot(df['solarPower'], label='solarPower')
+def plot_solar(df, filename):
+    plt.plot(df['date'], df['solarPower'], label='solarPower')
     # plt.show()
     plt.grid(True)
     plt.savefig(filename)
@@ -75,6 +76,9 @@ plot_load(df.loc[week:week+5*day])
 plot_average_day_load(df)
 
 plot_battery(df.loc[:2*week])
-plot_solar(df.loc[:month*12])
+plot_solar(df.loc[:year], "plot_solar_year.pdf")
+plot_solar(df.loc[:month], "plot_solar_month.pdf")
+plot_solar(df.loc[:week], "plot_solar_week.pdf")
+plot_solar(df.loc[:day], "plot_solar_day.pdf")
 plot_solar_hist(df.loc[:month*12])
 plot_all_power(df.loc[:week])
