@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <math.h>
+#include <cstring>
 
 // Simulation parameters
 const int SIM_START_TIME = 0; // minutes
@@ -29,11 +30,10 @@ const float CONST_POWER = 0.1; // kW
 
 // Solar 
 const float SOLAR_INSTALLED_POWER = 5; // kWp
-const float SOLAR_EFF_DETERIORATION = 0.005; // kWp
+const float SOLAR_EFF_DETERIORATION = 0.005; // yearly drop in percent
 
 // shared variables
 float solarPower; // Power currently generated in kW
-
 
 // retruns number between 0 and 23
 int getTimeOfDay() {
@@ -51,15 +51,15 @@ const int daysInMonth[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31,};
 int getDayOfMonth()
 {
 	int temp = (int(Time) / 60 / 24);
-	int month = 0;
+	int m = 0;
 	while (true)
 	{
-		if (temp <= daysInMonth[month])
+		if (temp <= daysInMonth[m])
 		{
 			break;
 		}
-		temp -= daysInMonth[month];
-		month++;
+		temp -= daysInMonth[m];
+		m++;
 	}
 	return (temp != 0) ? temp : 1;
 }
@@ -68,28 +68,18 @@ int getDayOfMonth()
 int getMonth()
 {
 	int temp = (int(Time) / 60 / 24);
-	int month = 0;
+	int m = 0;
 	while (true)
 	{
-		if (temp <= daysInMonth[month])
+		if (temp <= daysInMonth[m])
 		{
 			break;
 		}
-		temp -= daysInMonth[month];
-		month++;
+		temp -= daysInMonth[m];
+		m++;
 	}
-	return (month);
+	return (m);
 }
-
-// data from https://www.chmi.cz/historicka-data/pocasi/uzemni-teploty?l=en#
-// location: Brno
-const float yearlyTemp[24] = {-1.2, 0.0, 2.1, 5.0, 9.8, 18.1, 17.8, 15.4, 13.4, 7.2, 2.7, 0.6,};
-
-// data from https://weather-and-climate.com/average-monthly-hours-Sunshine,Brno,Czech-Republic
-const int monthlySunshineHours[12] = {55, 82, 139, 210, 225, 247, 245, 244, 177, 113, 61, 45,};
-
-// data from https://weather-and-climate.com/average-monthly-hours-Sunshine,Brno,Czech-Republic
-const int monthlyChanceToRain[12] = {20, 17, 23, 20, 27, 30, 30, 23, 20, 20, 23, 27,};
 
 // data from https://www.johnnyspraguetours.com/when-sunrise-sunset-prague/
 // date is in the middle of the month
@@ -103,127 +93,142 @@ const float monthlySunset[12] =
 	20.72, 21.23, 21.1, 20.33, 
 	19.25, 18.17, 16.28, 16,};
 
-const float monthlyCoef[12] = {0.41,0.83,0.91,0.95,0.95,1,1,0.95,0.83,0.75,0.52,0.22,};
-
-float effByMonth() {
-	int m = getMonth();
-	int d = getDayOfMonth();
-	int daysM = daysInMonth[m];
-	float dist = d - daysInMonth[m] / 2;
-	int n;
-	if (dist > 0)
-	{
-		n = (m + 1) % 12;
-	}
-	else {
-		n = (m == 0) ? 11 : (m - 1);
-		dist *= -1;
-	}
-	int daysN = daysInMonth[n];
-	float q = ((daysM + daysN) / 2);
-	float x = q - dist;
-	return (dist * monthlyCoef[n] + x * monthlyCoef[m]) / q;
-}
-
-// https://www.cleanenergyreviews.info/blog/most-efficient-solar-panels
-float effDropTemp()
-{
-	int m = getMonth();
-	return ((-3.0 * yearlyTemp[m]) / 10.0 + 107.5) / 100.0 * effByMonth();
-}
-
-float effDropDeterioration(float efficiency) {
-	// Reduce efficiency by 0.5% per year
-	return efficiency - ((SOLAR_EFF_DETERIORATION / 365) * (int(Time) / (24 * 60)));
-}
-
-float getEfficencyDrop() {
-	float base_eff = effDropTemp();
-	float eff = effDropDeterioration(base_eff);
-	int month = getMonth();
-	return eff;
-}
-
-float getSunnyDays(int month) {
-	float dayLen = monthlySunset[month] - monthlySunrise[month];
-	float sunnyDays = monthlySunshineHours[month] / dayLen;
-	return sunnyDays;
-}
-
-// basic sinusoidal model of solar power generated
-float getSolarPower(int h, float sunrise, float sunset, float midday)
-{
-	float eff = getEfficencyDrop();
-	// only sunny hours
-	if (h > (sunrise - 1.0) and h < (sunset + 1.0))
-	{
-		solarPower = eff * SOLAR_INSTALLED_POWER / 10;
-		if (h > sunrise and h < sunset)
-		{
-			if (h > midday)
-			{
-				solarPower = eff * SOLAR_INSTALLED_POWER * pow((1 - (h - midday) / (sunset - midday)), 0.2);
-			}
-			else
-			{
-				solarPower = eff * SOLAR_INSTALLED_POWER * pow((h - sunrise) / (midday - sunrise), 0.2);
-			}
-		}
-	}
-	else
-	{
-		return 0;
-	}
-	return solarPower;
-}
-
+static bool dayIsCloudy[32];
 static int lastValue;
-
-float computeCloudyWeather(float solarPower)
-{
-	// generate float from 0.0 to 1.0
-	float r = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-	lastValue = r;
-	return (r * solarPower + lastValue) / 2 * r;
-}
-
-static int cloudyDaysArray[31];
 
 // Solar power system
 class Solar : public Process
 {
+	const float monthlyCoef[12] = {0.2,0.4,0.6,0.65,0.7,0.9,0.85,0.8,0.7,0.5,0.2,0.1,};
+
+	// data from https://www.chmi.cz/historicka-data/pocasi/uzemni-teploty?l=en#
+	// location: Brno, CZ
+	const float yearlyTemp[24] = {-1.2, 0.0, 2.1, 5.0, 9.8, 18.1, 17.8, 15.4, 13.4, 7.2, 2.7, 0.6,};
+
+	// data from https://weather-and-climate.com/average-monthly-hours-Sunshine,Brno,Czech-Republic
+	const int monthlySunshineHours[12] = {55, 82, 139, 210, 225, 247, 245, 244, 177, 113, 61, 45,};
+
+	// data from https://weather-and-climate.com/average-monthly-hours-Sunshine,Brno,Czech-Republic
+	const int monthlyChanceToRain[12] = {20, 17, 23, 20, 27, 30, 30, 23, 20, 20, 23, 27,};
+
+	float computeCloudyWeather(float solarPower, float modifier)
+	{
+		float r = Random();
+		lastValue = r;
+		return (modifier * solarPower * r + lastValue) / 2;
+	}
+
+	// Linear interpolation between months
+	float effByMonth()
+	{
+		int m = getMonth();
+		int d = getDayOfMonth();
+		int daysM = daysInMonth[m];
+		float dist = d - daysInMonth[m] / 2;
+		int n;
+		if (dist > 0)
+		{
+			n = (m + 1) % 12;
+		}
+		else
+		{
+			n = (m == 0) ? 11 : (m - 1);
+			dist *= -1;
+		}
+		int daysN = daysInMonth[n];
+		float q = ((daysM + daysN) / 2);
+		float x = q - dist;
+		return (dist * monthlyCoef[n] + x * monthlyCoef[m]) / q;
+	}
+
+	// https://www.cleanenergyreviews.info/blog/most-efficient-solar-panels
+	float effDropTemp()
+	{
+		// Reduce efficiency when temperature
+		int m = getMonth();
+		return ((-3.0 * yearlyTemp[m]) / 10.0 + 107.5) / 100.0 * effByMonth();
+	}
+
+	float effDropDeterioration(float base_eff)
+	{
+		// Reduce efficiency by 0.5% per year
+		return base_eff - ((SOLAR_EFF_DETERIORATION / 365) * (int(Time) / (24 * 60)));
+	}
+
+	float getEfficencyDrop()
+	{
+		float base_eff = effDropTemp();
+		float eff = effDropDeterioration(base_eff);
+		return eff;
+	}
+
+	float getSunnyDays(int month)
+	{
+		float dayLen = monthlySunset[month] - monthlySunrise[month];
+		float sunnyDays = monthlySunshineHours[month] / dayLen;
+		return sunnyDays;
+	}
+
+	// basic sinusoidal model of solar power generated
+	float getSolarPower(int h, int m)
+	{
+		float sunrise = monthlySunrise[m];
+		float sunset = monthlySunset[m];
+		float midday = (sunset + sunrise) / 2;
+		float eff = getEfficencyDrop();
+
+		// Only when sun is in the air
+		if (h > sunrise and h < sunset) {
+			solarPower = eff * SOLAR_INSTALLED_POWER * cos((h - midday) * M_PI / (sunrise - sunset));
+		}
+		else {
+			return 0;
+		}
+		return solarPower;
+	}
+
 	void Behavior() {
+
+		float random_modifier = Random();
+
 		while (1) {
 			int h = getTimeOfDay();
 			int d = getDayOfMonth();
 			int m = getMonth();
-			float sunrise = monthlySunrise[m];
-			float sunset = monthlySunset[m];
-			float midday = (sunset + sunrise) / 2;
 			int daysMonth = daysInMonth[m];
 
-			// get base solar power
-			solarPower = getSolarPower(h, sunrise, sunset, midday);
+			// Get base solar power
+			solarPower = getSolarPower(h, m);
 
 			int sunnyDays = int(getSunnyDays(m)) + 1;
 			int cloudyDays = daysMonth - sunnyDays;
 		
-			int i = 0;
 			if ((d == 1) and (h == 0)) {
-				for (i; i < cloudyDays; i++)
+				memset(dayIsCloudy, 0, sizeof(dayIsCloudy));
+				// Designate some days as cloudy
+				for (int i = 0; i < cloudyDays; i++)
 				{
-					cloudyDaysArray[i] = rand() % daysMonth;
+					while (1) {
+						int chosen_day = rand() % daysMonth;
+						if (dayIsCloudy[chosen_day]) {
+							continue;
+						} 
+						else {
+							dayIsCloudy[chosen_day] = 1;
+							break;
+						}
+					}
 				}
-				cloudyDaysArray[i + 1] = 0;
+			}
+			// Random scale of clousiness
+			if (h == 0) {
+				random_modifier = Random();
 			}
 
-			i = 0;
-			while (cloudyDaysArray[i]) {
-				if (d == cloudyDaysArray[i]) {
-					solarPower = computeCloudyWeather(solarPower);
-					break;
-				}
-				i++;
+			// If day chosen as cloudy throw in some randomness
+			if (dayIsCloudy[d])
+			{
+				solarPower = computeCloudyWeather(solarPower, random_modifier);
 			}
 			Wait(5);
 		}
