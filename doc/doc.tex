@@ -51,7 +51,7 @@ Přínos této technologie je posouzen podle simulačního modelu, který modelu
 Technologie je poměrně nová a studie na toto téma dochází k různým závěrům, což bylo motivací pro vytvoření tohoto projektu.
 
 \subsection{Technologie Vehicle-to-grid}
-Vehicle to Grid (V2G) je technologie využívající vozidla schopná vyrábět nebo uchovávat elektrickou energii (např. elektrická, hybridní nebo vodíková vozidla).
+Vehicle to Grid (V2G) je technologie využívající vozidla schopná -vyrábět TODO nebo uchovávat elektrickou energii (např. elektrická, hybridní nebo vodíková vozidla).
 Vyžaduje datové spojení mezi vozidlem a nabíjecí stanicí, umožňující monitorovat stav sítě a podle něj modifikovat množství nabíjené elektřiny.
 Umožňuje nečinným vozidlům zapojeným do sítě napájet část nebo celou domácnost anebo dodávat do této sítě v baterii uloženou elektřinu.
 Tím může pomoci redukovat domácnosti využívající tento systém výdaje za elektřinu a také může snížit zatížení sítě.
@@ -147,6 +147,7 @@ Konkrétní hodnoty byly převzaty ze studie. \cite{TORRITI201737}
 Žárovky třídy \texttt{LightBulb} jsou implementovány tak,
 že
 
+
 \subsubsection{Verifikace modelu}
 
 Pro ověření správné spotřeby v závislosti na čase byl sestrojen histogram,
@@ -156,13 +157,15 @@ Implementovaný model víceméně koresponduje s předlohou \cite{TORRITI201737}
 
 Celá domácnost spotřebuje 3.27 MWh za rok, což zhruba odpovídá průměrné spotřebě domácnosti v České Republice\cite{CEZ}.
 
-
-
 \begin{figure}
 \includegraphics[width=\linewidth]{img/average_day_load.pdf}
-\caption{Průměrná spotřeba domácnosti v závislosti na čase}
+\caption{Průměrná spotřeba domácnosti v každé hodině dne}
 \label{fig:average_day_load}
 \end{figure}
+
+
+
+
 
 \subsection{Elektrické vozidlo}
 Elektrické vozidlo je implementováno jako další proces knihovny SIMLIB.
@@ -170,6 +173,7 @@ V porovnání s realitou tento modul obsahuje více, než jen EV.
 Obsahuje i nabíjecí stanici, která nabíjí vozidlo, případně dodává energii do sítě.
 V tomto modulu jsou také počítány veškeré ztráty energie, ke kterým dochází při nabíjení, resp. vybíjení.
 
+\subsubsection{Funkcionalita}
 Tento modul může být nastaven na více režimů operace, a těmi jsou V2G, V1G, obyčejná nabíječka a žádné auto.
 Režim V2G znamená, že EV se nabíjí podle toho, jestli je nějaký přebytek energie z elektrárny.
 Dále v tomto režimu EV dodává elektřinu do sítě, pokud ho o to měřící zařízení požádá.
@@ -184,6 +188,15 @@ Nabíjí se konstantní rychlostí, dokud není baterie plná.
 Modul také obsahuje režim, který představuje, že žádné EV není připojeno k síti.
 Jedná se spíše o implementační detail, díky kterému lze simulaci provést i bez EV.
 
+Maximální výkon pro nabíjení vozidla i dodávání energie zpět do sítě je 7,4 kW, podle TODO https://www.cleanenergyreviews.info/blog/bidirectional-ev-charging-v2g-v2h-v2l.
+
+Dále má vozidlo nastavitelný režim provozu, podle kterého může vyjíždět z domu.
+Implementovaný je režim, při kterém vozidlo jezdí do práce.
+Vozidlo každý všední den po sedmé hodině vyjíždí a vrací se za 8 hodin.
+V době, kdy je pryč mu také z baterie ubyde 5 kWh energie,
+což odpovídá ujeté vzdálenosti 25 km. TODO zdroj https://ev-database.org/cheatsheet/energy-consumption-electric-car.
+
+\subsubsection{Implementace}
 Nabíjení vozidla a dodávání energie do sítě je implementováno metodami třídy v C++.
 Objekt EV má proměnnou, ve které je současná energie, která je nabita v baterii.
 Měřící nástroj může vozidlu poslat, že chce v následujícím měřícím úseku nabít do baterie nějaké množství energie.
@@ -195,6 +208,8 @@ Dodávka energie do sítě se řídí stejným pravidlem.
 Pokud je EV na minimálním limitu baterie, nedodává již žádnou energii do sítě.
 Pokud je naopak baterie plně nabitá, vozidlo nespotřebovává žádnou energii.
 
+
+
 \subsection{Měřící zařízení}
 Měřící zařízení je implementováno jako proces knihovny SIMLIB.
 Tento proces provádí v pravidelných intervalech měření spořeby a výroby elektrické energie.
@@ -205,9 +220,227 @@ Všechny naměřené údaje jsou ukládány do sdíleného pole, aby šly přeč
 
 \section{Provedení simulace}
 
-\subsection{Nastavení parametrů}
+Simulace byla provedena vícekrát s různými prarametry.
+Nastavitelnými parametry jsou režim vozidla (V2G, V1G, ...), kapacita baterie a provoz vozidla (jezdí do práce).
 
-\subsection{Získaná data}
+Jedna kombinace parametrů byla vybrána jeko bázový příklad,
+oproti kterámu budou porovnávány ostatní.
+Pro další případy je vždy změněn pouze jeden parametr.
+
+\subsection{Základní příklad}
+
+\bigskip
+\begin{tabular}{ | c | c | c | }
+\hline
+Režim vozidla & Kapacita baterie & Provoz vozidla \\
+\hline
+V2G & 40 kWh & jezdí do práce \\
+\hline
+\end{tabular}
+\bigskip
+
+Pro bázový případ má vozidlo baterii o kapacitě 40 kWh, což je podle TODO zdroj průměr.
+Vozidlo operuje v režimu V2G, protože ten je hlavním zaměřením studie.
+
+\bigskip
+\begin{tabular}{ | l | c | }
+\hline
+Energie odebraná od dodavatele & 2.480 MWh \\
+\hline
+Energie dodaná dodavateli & 2.332 MWh \\
+\hline
+Energie vyrobená solární elektrárnou & 4.992 MWh \\
+\hline
+Energie spotřebovaná domácností & 3.263 MWh \\
+\hline
+Energie nabitá do EV & 2.355 MWh \\
+\hline
+Energie obnovená z EV & 0.477 MWh \\
+\hline
+Energie spotřebovaná EV & 1.305 MWh \\
+\hline
+\end{tabular}
+\bigskip
+
+
+\subsection{V1G}
+
+\bigskip
+\begin{tabular}{ | c | c | c | }
+\hline
+Režim vozidla & Kapacita baterie & Provoz vozidla \\
+\hline
+V1G & 40 kWh & jezdí do práce \\
+\hline
+\end{tabular}
+\bigskip
+
+\bigskip
+\begin{tabular}{ | l | c | }
+\hline
+Energie odebraná od dodavatele & 2.635 MWh \\
+\hline
+Energie dodaná dodavateli & 2.835 MWh \\
+\hline
+Energie vyrobená solární elektrárnou & 4.991 MWh \\
+\hline
+Energie spotřebovaná domácností & 3.263 MWh \\
+\hline
+Energie nabitá do EV & 1.529 MWh \\
+\hline
+Energie obnovená z EV & 0 MWh \\
+\hline
+Energie spotřebovaná EV & 1.305 MWh \\
+\hline
+\end{tabular}
+\bigskip
+
+
+\subsection{EV s běžnou nabíječkou}
+
+\bigskip
+\begin{tabular}{ | c | c | c | }
+\hline
+Režim vozidla & Kapacita baterie & Provoz vozidla \\
+\hline
+normální & 40 kWh & jezdí do práce \\
+\hline
+\end{tabular}
+\bigskip
+
+TODO napis vykon normalni nabijecky
+
+\bigskip
+\begin{tabular}{ | l | c | }
+\hline
+Energie odebraná od dodavatele & 3.183 MWh \\
+\hline
+Energie dodaná dodavateli & 3.354 MWh \\
+\hline
+Energie vyrobená solární elektrárnou & 4.992 MWh \\
+\hline
+Energie spotřebovaná domácností & 3.263 MWh \\
+\hline
+Energie nabitá do EV & 1.559 MWh \\
+\hline
+Energie obnovená z EV & 0 MWh \\
+\hline
+Energie spotřebovaná EV & 1.305 MWh \\
+\hline
+\end{tabular}
+\bigskip
+
+
+\subsection{Domácnost bez EV}
+
+\bigskip
+\begin{tabular}{ | c | c | c | }
+\hline
+Režim vozidla & Kapacita baterie & Provoz vozidla \\
+\hline
+neexistující & N/A & N/A \\
+\hline
+\end{tabular}
+\bigskip
+
+TODO spocitat, kolik by projelo benzinove auto.
+
+\bigskip
+\begin{tabular}{ | l | c | }
+\hline
+Energie odebraná od dodavatele & 2.133 MWh \\
+\hline
+Energie dodaná dodavateli &  3.862 MWh \\
+\hline
+Energie vyrobená solární elektrárnou & 4.992 MWh \\
+\hline
+Energie spotřebovaná domácností & 3.263 MWh \\
+\hline
+\end{tabular}
+\bigskip
+
+
+\subsection{EV s velkou baterií}
+
+\bigskip
+\begin{tabular}{ | c | c | c | }
+\hline
+Režim vozidla & Kapacita baterie & Provoz vozidla \\
+\hline
+V2G & 100 & jezdí do práce \\
+\hline
+\end{tabular}
+\bigskip
+
+V bázovém případě je uvažováno vozidlo s kapacitou baterie 40 kWh.
+Na trhu ale existují auta s kapacitkou až 100 kWh.
+Tento experiment je proveden pro porovnání rozdílů.
+
+\bigskip
+\begin{tabular}{ | l | c | }
+\hline
+Energie odebraná od dodavatele & 2.302 MWh \\
+\hline
+Energie dodaná dodavateli & 2.074 MWh \\
+\hline
+Energie vyrobená solární elektrárnou & 4.992 MWh \\
+\hline
+Energie spotřebovaná domácností & 3.263 MWh \\
+\hline
+Energie nabitá do EV & 2.547 MWh \\
+\hline
+Energie obnovená z EV & 0.588 MWh \\
+\hline
+Energie spotřebovaná EV & 1.305 MWh \\
+\hline
+\end{tabular}
+\bigskip
+
+Připojením auta s větší baterií bylo docíleno menší spořeby energie od dodavatele podle očekávání.
+Rozdíl však není příliš velký při porovnání 2.480 MWh v bázovém případě a
+2.302 MWh u auta s větší baterií.
+Při běžné ceně energie tento rozdíl ušetří TODO za rok, což zřejmě nepokryje cenu auta s větší baterií.
+
+
+\subsection{Trvale připojené vozidlo}
+
+\bigskip
+\begin{tabular}{ | c | c | c | }
+\hline
+Režim vozidla & Kapacita baterie & Provoz vozidla \\
+\hline
+V2G & 40 kWh & trvale připojeno \\
+\hline
+\end{tabular}
+\bigskip
+
+Ve všech ostatních případech je počítáno s tím, že je vozidlo využíváno pro dojíždění do práce.
+Toto jsou často hodiny, kdy je elektrárna nejvíce aktivní.
+Proto je proveden exprerimentm kdy je vozidlo připojeno trvale, nikdy neodjíždí.
+Toto je sice velmi nerealistický případ, ale umožní zjistit vliv nepřítomnosti vozidla.
+
+\bigskip
+\begin{tabular}{ | l | c | }
+\hline
+Energie odebraná od dodavatele & 0.940 MWh \\
+\hline
+Energie dodaná dodavateli & 1.804 MWh \\
+\hline
+Energie vyrobená solární elektrárnou & 4.992 MWh \\
+\hline
+Energie spotřebovaná domácností & 3.263 MWh \\
+\hline
+Energie nabitá do EV & 2.058 MWh \\
+\hline
+Energie obnovená z EV & 1.193 MWh \\
+\hline
+Energie spotřebovaná EV & 0 MWh \\
+\hline
+\end{tabular}
+\bigskip
+
+Permanentně připojené vozidlo snížilo spotřebu od dodavatele podle očekávání.
+Snížení z 2.480 MWh na 0.940 MWh je velmi výrazné.
 
 
 \section{Závěr}
