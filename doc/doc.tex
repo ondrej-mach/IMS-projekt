@@ -88,12 +88,18 @@ Vstupem pro toto generování je čas, podle kterého je určeno roční období
 To má v realitě významný vliv na výkon elektrárny, proto je nutné ho brát v úvahu.
 
 Konkrétními faktory, které mají významný vliv na výrobu elektřiny jsou délka dne, pozice slunce vůči panelu a počasí.
-Délka dne je určována z dat o východu a západu slunce,
-pozice slunce je určena tabulkou, ve které jsou vypsány efektivity panelů v daných ročních obdobích(nezávislé na počasí - tzn. v tabulce jsou slunečné dny).
+Délka dne je určována z dat o východu a západu slunce, panel je uvažován napevno přidělaný pod konstantním úhlem 45°.
+Pozice slunce je určena tabulkou, ve které jsou vypsány efektivity panelů v daných ročních obdobích(nezávislé na počasí - tzn. v tabulce jsou slunečné dny).
 Tato efektivita je modifikována pomocí tabulky s uloženými teplotami během roku a započítáno je zde i opotřebení panelu.
 Počasí je simulováno dle počtu hodin, kdy během měsíce svítí slunce. Ten se vydělí délkou daného dne a tím získáme počet slunečných dní.
 Zatažené dny jsou vybrány náhodně a intenzita zataženosti je také náhodná.
-Ve výsledku elektrárna generuje podobné výkon, jaký by se dal v naší oblasti - Brno očekávat.
+Ve výsledku elektrárna generuje podobný výkon, jaký by se dal v naší oblasti - Brně očekávat.
+
+\begin{figure}
+\includegraphics[width=\linewidth]{img/plot_solar_week.pdf}
+\caption{Efektivita solárního panelu během týdne}
+\label{fig:plot_solar_week}
+\end{figure}
 
 \subsection{Domácnost}
 Modul domácnosti má za úkol náhodně modelovat spotřebu elektrické energie tak,
