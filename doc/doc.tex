@@ -66,7 +66,11 @@ V2X, jinak také vehicle-to-everything, režim zamšřený na komunikaci s ostat
 V2G - vehicle-to-grid, nebo bi-directional smart charging. Umožňuje dodávat vyráběnou/uchovávanou elektřinu zpět do sítě a tím snížit její zatížení.
 
 \subsection{Předchozí studie}
-Tímto tématem se již v minulosti zabývalo množství odborných studií.
+Tímto tématem se již v minulosti zabývalo množství odborných studií. Jejich cílem bylo zjistit použitelnost konceptu a zjistit jeho benefity a nevýhody. 
+
+
+Bylo zjištěno, že pravidelným nabíjením a vybíjením baterie při provozu vozidla jako V2G dochází k degradaci baterie elektrického vozidla a tím ke snížení její životnosti.
+TODO http://wrap.warwick.ac.uk/88018/13/WRAP-possibility-extending-lifetime-lithium-ion-batteries-Marco-2017.pdf
 
 \section{Simulační model}
 Simulační model je logicky rozdělen na domácnost, solární elektrárnu, elektrické vozidlo a měřící zařízení.
@@ -89,16 +93,41 @@ To má v realitě významný vliv na výkon elektrárny, proto je nutné ho brá
 
 Konkrétními faktory, které mají významný vliv na výrobu elektřiny jsou délka dne, pozice slunce vůči panelu a počasí.
 Délka dne je určována z dat o východu a západu slunce, panel je uvažován napevno přidělaný pod konstantním úhlem 45°.
-Pozice slunce je určena tabulkou, ve které jsou vypsány efektivity panelů v daných ročních obdobích(nezávislé na počasí - tzn. v tabulce jsou slunečné dny).
-Tato efektivita je modifikována pomocí tabulky s uloženými teplotami během roku a započítáno je zde i opotřebení panelu.
-Počasí je simulováno dle počtu hodin, kdy během měsíce svítí slunce. Ten se vydělí délkou daného dne a tím získáme počet slunečných dní.
-Zatažené dny jsou vybrány náhodně a intenzita zataženosti je také náhodná.
-Ve výsledku elektrárna generuje podobný výkon, jaký by se dal v naší oblasti - Brně očekávat.
+
+Pozice slunce je určena tabulkou, ve které jsou vypsány průměrné hodnoty efektivity panelů v daných ročních obdobích(nezávislé na počasí - tzn. v tabulce jsou slunečné dny). Tyto hodnoty se vztahují k Německu, avšak vzhledem k velmi podobným geografickým a meterologickým podmínkám byly použity pro nedostatek lokálnějšího zdroje. Měnící se efektivita je viditelná na grafu~\ref{fig:solar_month}, kde je během měsíce dubna dobře viditelný rostoucí výkon elektrárny v jasných dnech. Zároveň je patrný rozdíl slunečnými a oblačnými dny.\cite{Paul-Frederik_Bach}
 
 \begin{figure}
-\includegraphics[width=\linewidth]{img/plot_solar_week.pdf}
-\caption{Efektivita solárního panelu během týdne}
-\label{fig:plot_solar_week}
+\includegraphics[width=\linewidth]{img/solar_month.pdf}
+\caption{Výkon solárního panelu během dubna}
+\label{fig:solar_month}
+\end{figure}
+
+Protože se efektivita panelu snižuje při vyšších teplotách vzduchu, jsou hodnoty v každém měsíci přepočítány pro průměrné teploty daného měsíce pomocí tabulky s hodnotami teploty během roku, což v případě České republiky vede ke snížení celkového výkonu elektrárny. \cite{article}
+
+Započítáno je zde i pro kratší období zanedbatelné půlprocentní opotřebení panelu za rok, které se významně projeví pouze při simulacích několika let.
+
+Počasí je simulováno dle počtu hodin, kdy během měsíce svítí slunce. Ten se vydělí délkou daného dne a takto získáme počet slunečných dní. Změna výkonu  v závislosti na čase během slunečného dne se nachází na grafu~\ref{fig:solar_day_clear}.\cite{9186286}
+
+\begin{figure}
+\includegraphics[width=\linewidth]{img/solar_day_clear.pdf}
+\caption{Výkon solárního panelu během jasného letního dne}
+\label{fig:solar_day_clear}
+\end{figure}
+
+Zatažené dny jsou v měsíci vybírány náhodně tak, aby celkový počet slunečných a zatažených hodin v měsíci se rovnal sumě počtu hodin mezi východem a západem slunce. Intenzita zataženosti je počítána jako průměr předchozí hodnoty zataženosti a hodnoty náhodné. Tímto způsebem získáme hodnoty, které odpovídají hodnotám skutečně naměřeným. Výkon elektrárny během oblačného dne se nachází v grafu~\ref{fig:solar_day_cloudy}. \cite{zilvar-2022}
+
+\begin{figure}
+\includegraphics[width=\linewidth]{img/solar_day_cloudy.pdf}
+\caption{Výkon solárního panelu během zataženého letního dne}
+\label{fig:solar_day_cloudy}
+\end{figure}
+
+Ve výsledku elektrárna generuje výkon, jaký by se dal v dané oblasti - Brně očekávat. \cite{zilvar_2022}
+
+\begin{figure}
+\includegraphics[width=\linewidth]{img/solar_power_hist.pdf}
+\caption{Suma výkonů v jednotlivých měsících}
+\label{fig:solar_power_hist}
 \end{figure}
 
 \subsection{Domácnost}
