@@ -51,13 +51,35 @@ Přínos této technologie je posouzen podle simulačního modelu, který modelu
 Technologie je poměrně nová a studie na toto téma dochází k různým závěrům, což bylo motivací pro vytvoření tohoto projektu.
 
 \subsection{Technologie Vehicle-to-grid}
-Vehicle to Grid (V2G) je technologie využívající vozidla schopná -vyrábět TODO nebo uchovávat elektrickou energii (např. elektrická, hybridní nebo vodíková vozidla).
-Vyžaduje datové spojení mezi vozidlem a nabíjecí stanicí, umožňující monitorovat stav sítě a podle něj modifikovat množství nabíjené elektřiny.
-Umožňuje nečinným vozidlům zapojeným do sítě napájet část nebo celou domácnost anebo dodávat do této sítě v baterii uloženou elektřinu.
-Tím může pomoci redukovat domácnosti využívající tento systém výdaje za elektřinu a také může snížit zatížení sítě.
-V rámci tohoto procesu však dochází k opotřebení baterie, tudíž snížení životnosti vozidla.
+Vehicle to Grid (dále jen V2G) je technologie využívající vozidla schopná uchovávat nebo vyrábět(např. některé typy vodíkových vozidel) elektrickou energii. 
+V2G umožňuje nečinným vozidlům zapojeným do sítě využívat v nich uloženou elektrickou energii za účelem napájení části nebo celé domácnosti anebo dodávat tuto energii do sítě.
+Vyžaduje datové spojení mezi vozidlem a nabíjecí stanicí, umožňující monitorovat stav sítě a podle napětí v síti modifikovat množství nabíjené elektřiny.
 
-\subsection{Režimy Vehicle-to-grid}
+\subsection{Motivace vzniku Vehicle-to-grid}
+Primárních cílů technologie V2G je několik. 
+
+Za prvé jsou baterie elektrických vozidel prostředkem pro vybalancování stavu sítě. 
+Toho je zapotřebí zejména v případě, že energie v síti pochází z významné části z obnovitelných zdrojů. 
+Ty jsou totiž nestabilní, což znamená, že při růžných podmínkách mohou produkovat značně rozdílné množství energie. 
+To může způsobit snížení napští při nedostatečné produkci z obnovitelných zdrojů, 
+přetížení sítě v dané oblasti při příliš nadměrné produkci elektřiny, nebo zacpání sítě. 
+To pak způsobuje prodražení kupované elektřiny, protože ta se začne odebírat ze záložních a dražších elektráren. 
+Technologie V2G dokáže při dostatečně rozsáhlém zavedení zmenšit následky, nebo úplně zamezit těmto jevům.
+\cite{GREAKER2022101310}
+
+Pro zákazníka to tedy znamená, že mu V2G systém umožňuje nabíjet baterii v časy, 
+kdy je elektřina levnější a napopak ji při vysokých cenách dodávat do sítě nazpět. 
+Tím může výrazně snížit domácnosti výdaje za elektřinu.
+\cite{virta-ltd-2021}
+
+\subsection{Nevýhody Vehicle-to-grid}
+V rámci procesu nabíjení a dodávání elektřiny do a ze sítě však dochází, stejně jako při jízdě a nabíjení, 
+k opotřebení baterie, tudíž ke snížení životnosti vozidla. 
+Vzhledem k vysokému podílu ceny baterií na ceně elektrického vozidla to nemusí být ekonomicky výhodné.
+Dále je spekulovatelná škálovatelnost, z důvodů kompatibility vozidel při zapojení do sítě.
+\cite{V2Gtransfer}
+
+\subsection{Konfigurace zapojení elektrických vozidel}
 Systém V2G může být nakonfigurován více způsoby.
 V1G, neboli jednosměrné V2G, je režim, kdy vozidlo nemůže dodávat do sítě elektřinu,
 je však schopno určit nejvhodnější časy pro nabíjení ze sítě. To mu umožňuje významně snížit cenu nabíjení, zátěž sítě a využívat větší podíl elektřiny z obnovitelných zdrojů.
