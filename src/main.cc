@@ -669,7 +669,7 @@ int main(int argc, char **argv) {
 	ev->Activate();
 	household->Activate();
 	Meter *meter = new Meter(ev, household);
-	meter->Activate();
+	meter->kapacita ();
 		
 	Run();
 	

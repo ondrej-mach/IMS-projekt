@@ -3,6 +3,11 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 
+plt.rcParams.update({
+    "text.usetex": True,
+    "font.family": "Helvetica"
+})
+
 df = pd.read_csv('out.csv', dtype='float')
 
 meter_tick = 2
@@ -33,23 +38,22 @@ def plot_battery(df, filename='battery_energy.pdf'):
 
 
 def plot_solar(df, filename, time_period):
-    
     if time_period == 'day':
         plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
         unit = 'minutes'
         plt.gca().set_yticks(np.arange(0,5, 0.5))
     elif time_period == 'month' or time_period == 'week':
-        plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%d.%m'))
+        plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%d.%m.'))
         unit = 'days'
     elif time_period == 'year':
         plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m'))
         unit = 'months'
 
     plt.gca().set_ylim([0, 5])
-    plt.plot(df['date'], df['solarPower'], label='solarPower')
-    plt.xlabel('Time('+unit+')')
-    plt.ylabel('Output(kW)')
-    plt.title('Solar panel output over ' + time_period)
+    plt.plot(df['date'], df['solarPower'], label='Solar power')
+    plt.xlabel('time ('+unit+')')
+    plt.ylabel('Output power (kW)')
+    # plt.title('Solar panel output over ' + time_period)
     plt.grid(True, axis='y')
     plt.savefig(filename)
     plt.clf()
@@ -61,9 +65,9 @@ def plot_solar_hist(df, filename='solar_power_hist.pdf'):
     plt.gca().set_xticklabels(np.arange(1,13))
     plt.gca().set_yticks(np.arange(0, 30000, 5000))
     plt.gca().set_yticklabels(np.arange(0, 30, 5))
-    plt.title('Monthly production throughout year')
-    plt.xlabel('Time(month)')
-    plt.ylabel('Output power(MW)')
+    # plt.title('Monthly production throughout year')
+    plt.xlabel('Time (month)')
+    plt.ylabel('Energy generated (MWh)')
     plt.bar(np.arange(12), monthAvg)
     # plt.show()
     plt.grid(True, axis='y')
@@ -73,11 +77,15 @@ def plot_solar_hist(df, filename='solar_power_hist.pdf'):
 # histogram for each month sum in kW
 
 def plot_load(df, filename='load_power.pdf'):
-    plt.plot(df['loadPower'], label='Load power')
     rollingAvg = df['loadPower'].rolling(window=int(6*hour), center=True).mean()
-    plt.plot(rollingAvg, label='Rolling average')
 
-    plt.legend(loc='best')
+    plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%d.%m.'))
+    plt.plot(df['date'], df['loadPower'], label='Load power', color='tab:orange')
+    plt.plot(df['date'], rollingAvg, label='Rolling average', color='tab:blue')
+
+    plt.xlabel('Time')
+    plt.ylabel('Power usage (kW)')
+    plt.legend(loc='upper center')
     plt.ylim(bottom=0)
     plt.grid(True)
     plt.savefig(filename)
@@ -86,11 +94,15 @@ def plot_load(df, filename='load_power.pdf'):
 
 def plot_average_day_load(df, filename='average_day_load.pdf'):
     dayAvg = df.groupby([df['date'].dt.hour])['loadPower'].mean()
-    plt.bar(np.arange(24) ,dayAvg)
+
+    plt.bar(np.arange(24), dayAvg)
     plt.ylim(bottom=0)
     plt.grid(True)
+    plt.xlabel('Hour of day')
+    plt.ylabel('Mean power usage (kW)')
     plt.savefig(filename)
     plt.clf()
+
 
 df['date'] = pd.date_range(start='1/1/2022', freq='2min', periods=df.shape[0])
 

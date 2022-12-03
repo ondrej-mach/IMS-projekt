@@ -3,6 +3,7 @@
 \usepackage[czech]{babel}
 \usepackage{csquotes}
 \usepackage{graphicx}
+\usepackage{float}
 \usepackage{textcomp}
 \usepackage{caption}
 \usepackage{biblatex}
@@ -63,45 +64,50 @@ Toho je zapotřebí zejména v případě, že energie v síti pochází z význ
 Ty jsou totiž volatilní, tedy, při růžných podmínkách mohou produkovat značně rozdílné množství energie. 
 To může způsobit snížení napětí při nedostatečné produkci a naopak přetížení nebo zacpání sítě v dané oblasti při příliš nadměrné produkci elektřiny. 
 Tyto jevy pak způsobují prodražení kupované elektřiny, protože se začne odebírat ze záložních a tedy i dražších elektráren. 
-Technologie V2G dokáže při dostatečně rozsáhlém zavedení zmenšit následky, nebo úplně zamezit některým z těchto jevů.
-\cite{GREAKER2022101310}
+Technologie V2G dokáže při dostatečně rozsáhlém zavedení zmenšit následky, nebo úplně zamezit některým z těchto jevů \cite{GREAKER2022101310}.
+
 
 Pro zákazníka to tedy znamená, že mu V2G systém umožňuje nabíjet baterii v časy, kdy je elektřina levnější a napopak ji při vysokých cenách dodávat do sítě nazpět, 
-nebo alespoň z části pokrýt spotřebu domácnosti. Tím může zákazníkovi výrazně snížit výdaje za elektřinu.
-\cite{virta-ltd-2021}
+nebo alespoň z části pokrýt spotřebu domácnosti. Tím může zákazníkovi výrazně snížit výdaje za elektřinu \cite{virta-ltd-2021}.
+
 
 \subsection{Nevýhody Vehicle-to-grid}
 V rámci procesu nabíjení a dodávání elektřiny do a ze sítě však dochází, stejně jako při jízdě a nabíjení, k opotřebení baterie, tudíž ke snížení životnosti vozidla. 
 Vzhledem k vysokému podílu ceny baterií na ceně elektrického vozidla tak lze spekulovat, že V2G nemusí být ekonomicky výhodné. Ze studií však vyplývá, že V2G nemá výrazně vyšší vliv na degradaci baterie, než běžný provoz elektrického vozidla, ba naopak, někdy může vést ke snížení míry degradace baterie.
 Dopady na baterii však lze zmírnit použitím inteligentních sítí.
-Dále je spekulovatelná škálovatelnost, z důvodů nekompatibility vozidel při zapojení do sítě.
-\cite{V2Gtransfer}
+Dále je spekulovatelná škálovatelnost, z důvodů nekompatibility vozidel při zapojení do sítě \cite{V2Gtransfer}.
+
 
 \subsection{Konfigurace zapojení elektrických vozidel}
 Systém V2G může být nakonfigurován více způsoby.
 V1G, neboli jednosměrné V2G, je režim, kdy vozidlo nemůže dodávat do sítě elektřinu,
 je však schopno určit nejvhodnější časy pro nabíjení ze sítě. To mu umožňuje významně snížit cenu nabíjení, zátěž sítě a využívat větší podíl elektřiny z obnovitelných zdrojů.
-V2B/V2H, neboli vehicle-to-building/home, při tomto režimu je vozidlo schopné omezeně dodávat uloženou energii do budovy/domácnosti v případě fluktuace napští v síti, nebo při výpadcích proudu.
-V2X, jinak také vehicle-to-everything, režim zamšřený na komunikaci s ostatními vozidly nebo infrastrukturou, primárním účelem není kontrola nabíjení, ale efektivita a bezpečnost dopravy.
+V2B/V2H, neboli vehicle-to-building/home, při tomto režimu je vozidlo schopné omezeně dodávat uloženou energii do budovy/domácnosti v případě fluktuace napětí v síti, nebo při výpadcích proudu.
+V2X, jinak také vehicle-to-everything, režim zaměřený na komunikaci s ostatními vozidly nebo infrastrukturou, primárním účelem není kontrola nabíjení, ale efektivita a bezpečnost dopravy.
 V2G - vehicle-to-grid, nebo bi-directional smart charging. Umožňuje dodávat vyráběnou/uchovávanou elektřinu zpět do sítě a tím snížit její zatížení.
 
 \subsection{Předchozí studie}
 Tímto tématem se již v minulosti zabývalo množství odborných studií. Jejich cílem bylo zjistit použitelnost konceptu a zjistit jeho benefity a nevýhody. 
 TODO
-Bylo zjištěno, že pravidelným nabíjením a vybíjením baterie při provozu vozidla jako V2G dochází k degradaci baterie elektrického vozidla a tím ke snížení její životnosti.
-\cite{wrap88018}
+Bylo zjištěno, že pravidelným nabíjením a vybíjením baterie při provozu vozidla jako V2G dochází k degradaci baterie elektrického vozidla a tím ke snížení její životnosti \cite{wrap88018}.
+
+\newpage
 
 \section{Simulační model}
 Simulační model je logicky rozdělen na domácnost, solární elektrárnu, elektrické vozidlo a měřící zařízení.
 
-\bigskip
-\includegraphics[width=0.5\linewidth]{img/diagram.pdf}
-\bigskip
-
 V rámci solární elektrárny je náhodně generován výkon.
 Ten je závislý pouze na modelovém čase, ze kterého je určeno roční období.
 
-Modul domácnosti generuje spotřebovaný výkon, který je také závislý na čase,
+Modul domácnosti generuje spotřebovaný výkon, který je závislý pouze na čase.
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[width=0.6\linewidth]{img/diagram.pdf}
+\caption{Blokový diagram subsystémů}
+\end{center}
+\label{fig:solar_month}
+\end{figure}
 
 \subsection{Solární elektrárna}
 V rámci tohoto modulu je náhodně generována výroba energie.
@@ -115,14 +121,16 @@ Konkrétními faktory, které mají významný vliv na výrobu elektřiny jsou d
 Délka dne je určována z dat o východu a západu slunce, panel je uvažován napevno přidělaný pod konstantním úhlem 45°.
 Pozice slunce je určena tabulkou, ve které jsou vypsány průměrné hodnoty efektivity panelů v daných ročních obdobích(nezávislé na počasí - tzn. v tabulce jsou slunečné dny). 
 Tyto hodnoty se vztahují k Německu, avšak vzhledem k velmi podobným geografickým a meterologickým podmínkám byly použity pro nedostatek lokálnějšího zdroje.
-\cite{solar2014_hourly_month1.png}
+\cite{solar2014_hourly_month}
 
 Měnící se efektivita je viditelná na grafu~\ref{fig:solar_month}, kde je během měsíce dubna dobře viditelný rostoucí výkon elektrárny v jasných dnech. 
 Zároveň je patrný rozdíl slunečnými a oblačnými dny.\cite{Paul-Frederik_Bach}
 
-\begin{figure}
-\includegraphics[width=\linewidth]{img/solar_month.pdf}
-\caption{Výkon solárního panelu během dubna}
+\begin{figure}[H]
+\begin{center}
+\includegraphics[width=0.8\linewidth]{img/solar_month.pdf}
+\caption{Výkon solárního panelu v intervalu jednoho měsíce}
+\end{center}
 \label{fig:solar_month}
 \end{figure}
 
@@ -133,29 +141,35 @@ což v případě České republiky vede ke snížení celkového výkonu elektr
 Započítáno je zde i pro kratší období zanedbatelné půlprocentní opotřebení panelu za rok, které se významně projeví pouze při simulacích několika let.
 
 Počasí je simulováno dle počtu hodin, kdy během měsíce svítí slunce. Ten se vydělí délkou daného dne a takto získáme počet slunečných dní. 
-Změna výkonu v závislosti na čase během slunečného dne se nachází na grafu~\ref{fig:solar_day_clear}.\cite{9186286}
+Změna výkonu v závislosti na čase během slunečného dne se nachází na grafu~\ref{fig:solar_day_clear}. \cite{9186286} TODO
 
-\begin{figure}
-\includegraphics[width=\linewidth]{img/solar_day_clear.pdf}
+\begin{figure}[H]
+\begin{center}
+\includegraphics[width=0.8\linewidth]{img/solar_day_clear.pdf}
 \caption{Výkon solárního panelu během jasného letního dne}
+\end{center}
 \label{fig:solar_day_clear}
 \end{figure}
 
 Zatažené dny jsou v měsíci vybírány náhodně tak, aby celkový počet slunečných a zatažených hodin v měsíci se rovnal sumě počtu hodin mezi východem a západem slunce. 
 Intenzita zataženosti je počítána jako průměr předchozí hodnoty zataženosti a hodnoty náhodné. Tímto způsebem získáme hodnoty, které odpovídají hodnotám skutečně naměřeným. 
-Výkon elektrárny během oblačného dne se nachází v grafu~\ref{fig:solar_day_cloudy}. \cite{zilvar-2022}
+Výkon elektrárny během oblačného dne se nachází v grafu~\ref{fig:solar_day_cloudy}. \cite{zilvar-2022} TODO
 
-\begin{figure}
-\includegraphics[width=\linewidth]{img/solar_day_cloudy.pdf}
+\begin{figure}[H]
+\begin{center}
+\includegraphics[width=0.8\linewidth]{img/solar_day_cloudy.pdf}
 \caption{Výkon solárního panelu během zataženého letního dne}
+\end{center}
 \label{fig:solar_day_cloudy}
 \end{figure}
 
-Ve výsledku elektrárna generuje výkon, jaký by se dal v dané oblasti - Brně očekávat. \cite{zilvar_2022}
+Ve výsledku elektrárna generuje výkon, jaký by se dal v dané oblasti - Brně očekávat \cite{zilvar-2022}.
 
-\begin{figure}
-\includegraphics[width=\linewidth]{img/solar_power_hist.pdf}
+\begin{figure}[t]
+\begin{center}
+\includegraphics[width=0.8\linewidth]{img/solar_power_hist.pdf}
 \caption{Suma výkonů v jednotlivých měsících}
+\end{center}
 \label{fig:solar_power_hist}
 \end{figure}
 
@@ -180,7 +194,7 @@ Dále je do této části započítána pohotovostní spotřeba televizí, monit
 Dynamická spotřeba představuje spotřebiče, které spotřebovávají energii pouze občas.
 Toto je naprostá většina spotřebičů používaných v domácnosti.
 Patřila by sem například varná konvice, elektrický sporák, televize, počítač a mnoho dalších.
-Každý spotřebič má zadáno, mezi kterými časy se spouští a jaký podíl této doby je průměrně aktivní. [TODO mozna i neco dalsiho]
+Každý spotřebič má zadáno, mezi kterými časy se spouští a jaký podíl této doby je průměrně aktivní.
 Podle těchto parametrů náhodně generuje zátěž.
 
 Dynamická spotřeba je zcela nutná, aby byl model validní.
@@ -188,12 +202,12 @@ V případě, že by byla modelována pouze konstantní spotřeba,
 celková spotřeba by mohla být stejná, ale spotřeba ze sítě resp. dodávka do sítě by se výrazně lišila.
 
 Modul domácnosti periodicky sčítá výkon všech spotřebičů, který je monitorován monitorovacím zařízením.
-Tato spotřeba je zobrazena na obrázku ~\ref{fig:load_power},
+Tato spotřeba je zobrazena na obrázku~\ref{fig:load_power},
 kde jedna křivka představuje okamžitou spotřebu a druhá šestihodinový pohyblivý průměr.
 
-\begin{figure}
+\begin{figure}[H]
 \includegraphics[width=\linewidth]{img/load_power.pdf}
-\caption{Spotřeba domácnosti v rozsahu 5 dní}
+\caption{Spotřeba domácnosti v intervalu 5 dní}
 \label{fig:load_power}
 \end{figure}
 
@@ -206,31 +220,36 @@ Spotřebiče jsou implementovány třídami \texttt{Appliance} a \texttt{LightBu
 Spotřebiče třídy \texttt{Appliance} mají jako parametry výkon, průměrný čas běhu a pravděpodobnosti, že budou zapnuté pro každou hodinu.
 Pravděpodobnosti jsou implementovány jako pole 24 položek typu float,
 každá z nich určuje pravděpodobnost, že bude daný spotřebič v tu hodinu aktivní.
-Konkrétní hodnoty byly převzaty ze studie. \cite{TORRITI201737}
+Konkrétní hodnoty byly převzaty ze studie \textcite{TORRITI201737}.
 
-Žárovky třídy \texttt{LightBulb} jsou implementovány tak,
-že
+Žárovky třídy \texttt{LightBulb} jsou implementovány tak, že po západu slunce se zapnou.
+V nastavený čas, kdy chodí členové domácnosti spát se žárovky zase vypnou.
+Oba dva časy jsou ovlivněny náhodným generátorem.
 
 \subsubsection{Verifikace modelu}
 
 Pro ověření správné spotřeby v závislosti na čase byl sestrojen histogram,
-který zobrazuje průměrnou spotřebu v každé hodině dne (Obrázek \ref{fig:average_day_load}).
+který zobrazuje průměrnou spotřebu v každé hodině dne (Obrázek~\ref{fig:average_day_load}).
 Data jsou zprůměrována z 1 simulovaného roku roku.
 Implementovaný model víceméně koresponduje s předlohou \cite{TORRITI201737}.
 
-Celá domácnost spotřebuje 3.27 MWh za rok, což zhruba odpovídá průměrné spotřebě domácnosti v České Republice\cite{CEZ}.
+Celá domácnost spotřebuje 3.27~MWh za rok, což zhruba odpovídá průměrné spotřebě domácnosti v České Republice \cite{CEZ}.
 
-\begin{figure}
+\begin{figure}[H]
 \includegraphics[width=\linewidth]{img/average_day_load.pdf}
 \caption{Průměrná spotřeba domácnosti v každé hodině dne}
 \label{fig:average_day_load}
 \end{figure}
+
+\newpage
+
 
 \subsection{Elektrické vozidlo}
 Elektrické vozidlo je implementováno jako další proces knihovny SIMLIB.
 V porovnání s realitou tento modul obsahuje více, než jen EV.
 Obsahuje i nabíjecí stanici, která nabíjí vozidlo, případně dodává energii do sítě.
 V tomto modulu jsou také počítány veškeré ztráty energie, ke kterým dochází při nabíjení, resp. vybíjení.
+Efektivita nabíjení je nastavena na 85~\% a vybíjení na 68~\% \cite{SHIRAZI2018}.
 
 \subsubsection{Funkcionalita}
 Tento modul může být nastaven na více režimů operace, a těmi jsou V2G, V1G, obyčejná nabíječka a žádné auto.
@@ -247,7 +266,7 @@ Nabíjí se konstantní rychlostí, dokud není baterie plná.
 Modul také obsahuje režim, který představuje, že žádné EV není připojeno k síti.
 Jedná se spíše o implementační detail, díky kterému lze simulaci provést i bez EV.
 
-Maximální výkon pro nabíjení vozidla i dodávání energie zpět do sítě je 7,4 kW, podle TODO https://www.cleanenergyreviews.info/blog/bidirectional-ev-charging-v2g-v2h-v2l.
+Maximální výkon pro nabíjení vozidla i dodávání energie zpět do sítě je 7.4~kW \cite{EVchargers}.
 
 Dále má vozidlo nastavitelný režim provozu, podle kterého může vyjíždět z domu.
 Implementovaný je režim, při kterém vozidlo jezdí do práce.
@@ -277,14 +296,16 @@ Pokud je v síti naopak nedostatek energie a bylo by nutné ji brát od dodavate
 Poté spočítá sumu i s elekrickým vozidlem.
 Všechny naměřené údaje jsou ukládány do sdíleného pole, aby šly přečíst a analyzovat po skončení simulace.
 
+\newpage
+
 \section{Provedení simulace}
 
 Simulace byla provedena vícekrát s různými prarametry.
 Nastavitelnými parametry jsou režim vozidla (V2G, V1G, ...), kapacita baterie a provoz vozidla (jezdí do práce).
 
 Jedna kombinace parametrů byla vybrána jeko bázový příklad,
-oproti kterámu budou porovnávány ostatní.
-Pro další případy je vždy změněn pouze jeden parametr.
+oproti kterému budou porovnávány ostatní.
+Pro ostatní případy je vždy změněn pouze jeden parametr.
 
 \subsection{Základní příklad}
 
@@ -298,7 +319,7 @@ V2G & 40 kWh & jezdí do práce \\
 \end{tabular}
 \bigskip
 
-Pro bázový případ má vozidlo baterii o kapacitě 40 kWh, což je podle TODO zdroj průměr.
+Pro bázový případ má vozidlo baterii o kapacitě 40~kWh, což je podle \textcite{} průměr.
 Vozidlo operuje v režimu V2G, protože ten je hlavním zaměřením studie.
 
 \bigskip
@@ -354,6 +375,8 @@ Energie spotřebovaná EV & 1.305 MWh \\
 \end{tabular}
 \bigskip
 
+Při použití režimu V1G odebrere domácnost o 6.3~\% více energie od dodavatele.
+Domácnost ale také dodává o 21.6~\% více energie zpět do sítě.
 
 \subsection{EV s běžnou nabíječkou}
 
@@ -367,7 +390,8 @@ normální & 40 kWh & jezdí do práce \\
 \end{tabular}
 \bigskip
 
-TODO napis vykon normalni nabijecky
+V tomto případě je auto nabíjeno obyčejnou nabíječkou, která je typicky dodána s autem.
+Taková nabíječka má výkon 1.5~kW a nebere žádný ohled na zbytek sítě \cite{EVchargers}.
 
 \bigskip
 \begin{tabular}{ | l | c | }
@@ -389,6 +413,7 @@ Energie spotřebovaná EV & 1.305 MWh \\
 \end{tabular}
 \bigskip
 
+Z výsledků lze zjistit, že spotřeba energie od dodavatele vzrostla o 28.3~\%. Dodávka energie vzrostla o 43.8~\%.
 
 \subsection{Domácnost bez EV}
 
@@ -401,8 +426,6 @@ neexistující & N/A & N/A \\
 \hline
 \end{tabular}
 \bigskip
-
-TODO spocitat, kolik by projelo benzinove auto.
 
 \bigskip
 \begin{tabular}{ | l | c | }
@@ -431,8 +454,8 @@ V2G & 100 & jezdí do práce \\
 \end{tabular}
 \bigskip
 
-V bázovém případě je uvažováno vozidlo s kapacitou baterie 40 kWh.
-Na trhu ale existují auta s kapacitkou až 100 kWh.
+V bázovém případě je uvažováno vozidlo s kapacitou baterie 40~kWh.
+Na trhu ale existují auta s kapacitkou až 100~kWh.
 Tento experiment je proveden pro porovnání rozdílů.
 
 \bigskip
@@ -456,10 +479,7 @@ Energie spotřebovaná EV & 1.305 MWh \\
 \bigskip
 
 Připojením auta s větší baterií bylo docíleno menší spořeby energie od dodavatele podle očekávání.
-Rozdíl však není příliš velký při porovnání 2.480 MWh v bázovém případě a
-2.302 MWh u auta s větší baterií.
-Při běžné ceně energie tento rozdíl ušetří TODO za rok, což zřejmě nepokryje cenu auta s větší baterií.
-
+Domácnost odebírá o 7.2~\% energie méně od dodavatele.
 
 \subsection{Trvale připojené vozidlo}
 
@@ -499,13 +519,42 @@ Energie spotřebovaná EV & 0 MWh \\
 \bigskip
 
 Permanentně připojené vozidlo snížilo spotřebu od dodavatele podle očekávání.
-Snížení z 2.480 MWh na 0.940 MWh je velmi výrazné.
+Spotřeba energie od dodavatele byla snížena o 62.0~\%, což je velmi významné.
+Je také potřeba brát v úvahu, že auto celou dobu vůbec nejezdilo, což snížilo celkovou spotřebu o 1.559 MWh.
 
+Toto potrvrzuje hypotézu že pro auto je důležité zůstat co nejdelší dobu připojené k síti.
+
+\newpage
 
 \section{Závěr}
+\subsection{V2G}
+Provedená simulace dokázala, že technologie V2G může snížit spotřebu energie v domácnosti.
+Používání vozidla v dopoledních hodinách ale výrazně zmenšuje tyto výhody.
+Pokud je vozidlo pryč, když je elektrárna aktivní, je velká část energie prodána do sítě.
+Toto ale nemusí být případ všech domácností.
 
-Provedená simulace dokázala, že ...
+Při vybíjení vozidla také dochází k poměrně velkým ztrátám.
+Tyto ztráty mít podobnou cenu jako dodávání energie do sítě a následném odběru zpět.
+Ceny nákupu a výkupu energie jsou velmi proměnné a proto je nelze snadno porovnat s cenou ztrát.
 
+Také má tato technologie nevýhodu, že opotřebovává baterii vozidla.
+Tento aspekt není v této studii příliš brán v potaz, ale může snížit životnost baterie vozidla.
+
+Proto je závěr pro technologii V2G nerozhodný.
+
+\subsection{V1G}
+Technologie V1G ale ukázala poměrně decentní snížení spotřeby oproti běžné nabíječce na EV.
+Spotřeba ze sítě je o 17.2~\% menší v porovnání s běžnou nabíječkou
+
+Vozidlo nedodává energii zpět do sítě, díky čemuž zde nedochází ke ztrátám.
+Tato technologie také nemá problém s opotřebováním baterie,
+protože přes baterii projde stejné množství energie jako při běžném nabíjení.
+
+V případě, že domácnost již má solární elektrárnu a EV,
+tato nabíječka bude pravděpodobně rentabilní.
+
+
+\newpage
 \printbibliography
 
 \end{document}
