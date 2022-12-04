@@ -17,9 +17,9 @@ const float EV_INITIAL_CHARGE = 20; // kWh
 const float EV_LOW_LIMIT = 15; // kWh
 const float EV_CHARGE_EFF = 0.85;
 const float EV_DISCHARGE_EFF = 0.68;
-const float EV_MAX_CHARGE_POWER = 7.4; // kW before the losses
+const float EV_MAX_CHARGE_POWER = 7.4; // kW
 const float EV_NORMAL_CHARGE_POWER = 2; // kW, activates when battery
-const float EV_MAX_DISCHARGE_POWER = 7.4; // kW after the losses
+const float EV_MAX_DISCHARGE_POWER = 7.4; // kW
 
 // Household
 // Stuff, that is on all the time
@@ -669,8 +669,8 @@ int main(int argc, char **argv) {
 	ev->Activate();
 	household->Activate();
 	Meter *meter = new Meter(ev, household);
-	meter->kapacita ();
-		
+	meter->Activate();
+	
 	Run();
 	
 	saveData();
