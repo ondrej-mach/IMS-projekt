@@ -1,4 +1,4 @@
-\documentclass[12pt,a4paper]{Cotmas-2018}
+\documentclass[12pt,a4paper]{article}
 
 \usepackage[czech]{babel}
 \usepackage{csquotes}
@@ -52,7 +52,7 @@ Přínos této technologie je posouzen podle simulačního modelu, který modelu
 Technologie je poměrně nová a studie na toto téma dochází k různým závěrům, což bylo motivací pro vytvoření tohoto projektu.
 
 \subsection{Technologie Vehicle-to-grid}
-Vehicle to Grid (dále jen V2G) je technologie využívající vozidla schopná uchovávat nebo vyrábět(např. některé typy vodíkových vozidel) elektrickou energii. V2G umožňuje nečinným vozidlům zapojeným do sítě využívat v nich uloženou elektrickou energii  za účelem napájení části nebo celé domácnosti anebo dodávat tuto energii do sítě.
+Vehicle to Grid (dále jen V2G) je technologie využívající vozidla schopná uchovávat nebo vyrábět (např. některé typy vodíkových vozidel) elektrickou energii. V2G umožňuje nečinným vozidlům zapojeným do sítě využívat v nich uloženou elektrickou energii za účelem napájení části nebo celé domácnosti anebo dodávat tuto energii do sítě.
 Vyžaduje datové spojení mezi vozidlem a nabíjecí stanicí, umožňující monitorovat stav sítě a podle napětí v síti modifikovat množství nabíjené elektřiny.
 
 \subsection{Motivace vzniku a výhody Vehicle-to-grid}
@@ -111,7 +111,7 @@ To má v realitě významný vliv na výkon elektrárny, proto je nutné ho brá
 Konkrétními faktory, které mají významný vliv na výrobu elektřiny jsou délka dne, pozice slunce na obloze, natočení panelu na světovou stranu, úhel panelu vzhledem k zemi a počasí. Znečištění ani poškození panelu není bráno v úvahu.
 
 Délka dne je určována z dat o východu a západu slunce, panel je uvažován napevno přidělaný pod konstantním úhlem 45°.
-Pozice slunce je určena tabulkou, ve které jsou vypsány průměrné hodnoty efektivity panelů v daných ročních obdobích(nezávislé na počasí - tzn. v tabulce jsou slunečné dny). Tyto hodnoty se vztahují k Německu, avšak vzhledem k velmi podobným geografickým a meterologickým podmínkám byly použity pro nedostatek lokálnějšího zdroje 
+Pozice slunce je určena tabulkou, ve které jsou vypsány průměrné hodnoty efektivity panelů v daných ročních obdobích (nezávislé na počasí - tzn. v tabulce jsou slunečné dny). Tyto hodnoty se vztahují k Německu, avšak vzhledem k velmi podobným geografickým a meterologickým podmínkám byly použity pro nedostatek lokálnějšího zdroje
 \cite{German-solar-hourly-2014}.
 
  Měnící se efektivita je viditelná na grafu~\ref{fig:solar_month}, kde je během měsíce dubna dobře viditelný rostoucí výkon elektrárny v jasných dnech. Zároveň je patrný rozdíl slunečnými a oblačnými dny \cite{PF-Bach-2022}.
@@ -257,7 +257,7 @@ Dále má vozidlo nastavitelný režim provozu, podle kterého může vyjíždě
 Implementovaný je režim, při kterém vozidlo jezdí do práce.
 Vozidlo každý všední den po sedmé hodině vyjíždí a vrací se za 8 hodin.
 V době, kdy je pryč mu také z baterie ubyde 5 kWh energie,
-což odpovídá ujeté vzdálenosti 25 km. TODO zdroj https://ev-database.org/cheatsheet/energy-consumption-electric-car.
+což odpovídá ujeté vzdálenosti 25 km \cite{ev-database-2022}.
 
 \subsubsection{Implementace}
 Nabíjení vozidla a dodávání energie do sítě je implementováno metodami třídy v C++.
