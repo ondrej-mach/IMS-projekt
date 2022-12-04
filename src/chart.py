@@ -25,14 +25,12 @@ def plot_all_power(df, filename='all_power.pdf'):
     plt.plot(df['netPower'], label='netPower')
     plt.grid(True)
     plt.legend(loc='best')
-    # plt.show()
     plt.savefig(filename)
     plt.clf()
 
 
 def plot_battery(df, filename='battery_energy.pdf'):
     plt.plot(df['batteryEnergy'], label='batteryEnergy')
-    # plt.show()
     plt.savefig(filename)
     plt.clf()
 
@@ -51,9 +49,8 @@ def plot_solar(df, filename, time_period):
 
     plt.gca().set_ylim([0, 5])
     plt.plot(df['date'], df['solarPower'], label='Solar power')
-    plt.xlabel('time ('+unit+')')
+    plt.xlabel('Time ('+unit+')')
     plt.ylabel('Output power (kW)')
-    # plt.title('Solar panel output over ' + time_period)
     plt.grid(True, axis='y')
     plt.savefig(filename)
     plt.clf()
@@ -65,11 +62,10 @@ def plot_solar_hist(df, filename='solar_power_hist.pdf'):
     plt.gca().set_xticklabels(np.arange(1,13))
     plt.gca().set_yticks(np.arange(0, 30000, 5000))
     plt.gca().set_yticklabels(np.arange(0, 30, 5))
-    # plt.title('Monthly production throughout year')
-    plt.xlabel('Time (month)')
+
+    plt.xlabel('Month')
     plt.ylabel('Energy generated (MWh)')
     plt.bar(np.arange(12), monthAvg)
-    # plt.show()
     plt.grid(True, axis='y')
     plt.savefig(filename)
     plt.clf()

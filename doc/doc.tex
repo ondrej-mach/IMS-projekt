@@ -48,7 +48,7 @@
 
 \section{Úvod}
 Tato práce pokládá otázku, zda je technologie Vehicle-to-grid ekonomicky rentabilní.
-Přínos této technologie je posouzen podle simulačního modelu, který modeluje výrobu a spotřebu elektrické energie v rámci domu.
+Přínos této technologie je posouzen podle simulačního modelu, který modeluje výrobu a spotřebu elektrické energie v rámci domácnosti.
 Technologie je poměrně nová a studie na toto téma dochází k různým závěrům, což bylo motivací pro vytvoření tohoto projektu.
 
 \subsection{Technologie Vehicle-to-grid}
@@ -58,25 +58,24 @@ Vyžaduje datové spojení mezi vozidlem a nabíjecí stanicí, umožňující m
 \subsection{Motivace vzniku a výhody Vehicle-to-grid}
 Primárních cílů technologie V2G je několik.
 
-Za prvé jsou baterie elektrických vozidel prostředkem pro vybalancování stavu sítě. Toho je zapotřebí zejména v případě, že energie v síti pochází z významné části z obnovitelných zdrojů. Ty jsou totiž volatilní, tedy, že při růžných podmínkách mohou produkovat značně rozdílné množství energie. To může způsobit snížení napětí při nedostatečné produkci, přetížení sítě v dané oblasti při příliš nadměrné produkci elektřiny, nebo zacpání sítě. Toto pak způsobuje prodražení kupované elektřiny, protože se začne odebírat ze záložních tedy i dražších elektráren. Technologie V2G dokáže při dostatečně rozsáhlém zavedení zmenšit následky, nebo úplně zamezit některým z těchto jevů 
+Za prvé jsou baterie elektrických vozidel prostředkem pro vybalancování stavu sítě. Toho je zapotřebí zejména v případě, že energie v síti pochází z významné části z obnovitelných zdrojů. Ty jsou totiž volatilní, tedy, při růžných podmínkách mohou produkovat značně rozdílné množství energie. To může způsobit snížení napětí při nedostatečné produkci, přetížení sítě v dané oblasti při příliš nadměrné produkci elektřiny v konktétním místě, nebo zacpání sítě. Tím je pak způsobeno prodražení kupované elektřiny, protože se začne odebírat ze záložních tedy i dražších elektráren. Technologie V2G dokáže při dostatečně rozsáhlém zavedení zmenšit následky, nebo úplně zamezit některým z těchto jevů
 \cite{Greaker-Hagem-Proost-2022}.
 
 Pro zákazníka to tedy znamená, že mu V2G systém umožňuje nabíjet baterii v časy, kdy je elektřina levnější a napopak ji při vysokých cenách dodávat do sítě nazpět, nebo alespoň z části pokrýt spotřebu domácnosti. Tím může zákazníkovi výrazně snížit výdaje za elektřinu 
 \cite{Virta-Ltd-2021}.
 
 \subsection{Nevýhody Vehicle-to-grid}
-V rámci procesu nabíjení a dodávání elektřiny do a ze sítě však dochází, stejně jako při jízdě a nabíjení, k opotřebení baterie, tudíž ke snížení životnosti vozidla. Vzhledem k vysokému podílu ceny baterií na ceně elektrického vozidla to nemusí být ekonomicky výhodné.
+V rámci procesu nabíjení a dodávání elektřiny do a ze sítě však dochází, stejně jako při běžném provozu elektrického vozidla, k opotřebení baterie, tudíž ke snížení životnosti vozidla. Vzhledem k vysokému podílu ceny baterií na ceně elektrického vozidla by to nemuselo být ekonomicky výhodné.
 Dále je spekulovatelná škálovatelnost, z důvodů kompatibility vozidel při zapojení do sítě 
 \cite{Lakshmi-Divya-Sravani-2019}.
 
 \subsection{Konfigurace zapojení elektrických vozidel}
 Systém V2G může být nakonfigurován více způsoby.
-V1G, neboli jednosměrné V2G, je režim, kdy vozidlo nemůže dodávat do sítě elektřinu,
+V1G, neboli jednosměrné V2G, je konfigurace, kdy vozidlo nemůže dodávat do sítě elektřinu,
 je však schopno určit nejvhodnější časy pro nabíjení ze sítě. To mu umožňuje významně snížit cenu nabíjení, zátěž sítě a využívat větší podíl elektřiny z obnovitelných zdrojů.
-V2B/V2H, neboli vehicle-to-building/home, při tomto režimu je vozidlo schopné omezeně dodávat uloženou energii do budovy/domácnosti v případě fluktuace napětí v síti, nebo při výpadcích proudu.
-V2X, jinak také vehicle-to-everything, režim zaměřený na komunikaci s ostatními vozidly nebo infrastrukturou, primárním účelem není kontrola nabíjení, ale efektivita a bezpečnost dopravy.
-V2G - vehicle-to-grid, nebo bi-directional smart charging. Umožňuje dodávat vyráběnou/uchovávanou elektřinu zpět do sítě a tím snížit její zatížení 
-\cite{Svarc-2022}.
+V2B/V2H, neboli vehicle-to-building/home, při této konfiguraci je vozidlo schopné omezeně dodávat uloženou energii do budovy/domácnosti v případě fluktuace napětí v síti, nebo při výpadcích proudu.
+V2X, jinak také vehicle-to-everything, konfigurace zaměřená na komunikaci s ostatními vozidly nebo infrastrukturou, primárním účelem není kontrola nabíjení, ale efektivita a bezpečnost dopravy.
+V2G - vehicle-to-grid, nebo bi-directional smart charging. Nad rámec V1G  navíc umožňuje dodávat vyráběnou/uchovávanou elektřinu zpět do sítě a tím snížit její zatížení\cite{Svarc-2022}.
 
 \subsection{Předchozí studie}
 Tímto tématem se již v minulosti zabývalo množství odborných studií. Jejich cílem bylo zjistit použitelnost konceptu a zjistit jeho benefity a nevýhody. 
@@ -97,8 +96,8 @@ Modul domácnosti generuje spotřebovaný výkon, který je závislý pouze na �
 \begin{figure}[H]
 \begin{center}
 \includegraphics[width=0.6\linewidth]{img/diagram.pdf}
-\caption{Blokový diagram subsystémů}
 \end{center}
+\caption{Blokový diagram subsystémů}
 \label{fig:solar_month}
 \end{figure}
 
@@ -106,46 +105,46 @@ Modul domácnosti generuje spotřebovaný výkon, který je závislý pouze na �
 V rámci tohoto modulu je náhodně generována výroba energie.
 Jediným výstupem je tudíž proměnná, ve které je uložen výkon elektrárny v daném čase.
 Vstupem pro toto generování je čas, podle kterého je určeno roční období.
-To má v realitě významný vliv na výkon elektrárny, proto je nutné ho brát v úvahu.
+To má v realitě nejvýznamnější vliv na výkon elektrárny, proto je nutné jej simulovat.
 
-Konkrétními faktory, které mají významný vliv na výrobu elektřiny jsou délka dne, pozice slunce na obloze, natočení panelu na světovou stranu, úhel panelu vzhledem k zemi a počasí. Znečištění ani poškození panelu není bráno v úvahu.
+Dalšími konkrétními faktory, které mají významný vliv na výrobu elektřiny jsou s ročním obdobím související délka dne, pozice slunce na obloze, natočení panelu na světovou stranu, úhel panelu vzhledem k zemi a počasí. Znečištění ani poškození panelu není bráno v úvahu.
 
 Délka dne je určována z dat o východu a západu slunce, panel je uvažován napevno přidělaný pod konstantním úhlem 45°.
 Pozice slunce je určena tabulkou, ve které jsou vypsány průměrné hodnoty efektivity panelů v daných ročních obdobích (nezávislé na počasí - tzn. v tabulce jsou slunečné dny). Tyto hodnoty se vztahují k Německu, avšak vzhledem k velmi podobným geografickým a meterologickým podmínkám byly použity pro nedostatek lokálnějšího zdroje
 \cite{German-solar-hourly-2014}.
 
- Měnící se efektivita je viditelná na grafu~\ref{fig:solar_month}, kde je během měsíce dubna dobře viditelný rostoucí výkon elektrárny v jasných dnech. Zároveň je patrný rozdíl slunečnými a oblačnými dny \cite{PF-Bach-2022}.
+ Měnící se efektivita je viditelná na grafu~\ref{fig:solar_month}, kde je během měsíce května dobře viditelný rostoucí výkon elektrárny v jasných dnech. Zároveň je patrný rozdíl slunečnými a oblačnými dny \cite{PF-Bach-2022}.
 
 \begin{figure}[H]
 \begin{center}
 \includegraphics[width=0.8\linewidth]{img/solar_month.pdf}
-\caption{Výkon solárního panelu v intervalu jednoho měsíce}
 \end{center}
+\caption{Výkon solárního panelu v intervalu jednoho měsíce}
 \label{fig:solar_month}
 \end{figure}
 
-Protože se efektivita panelu snižuje při vyšších teplotách vzduchu, jsou hodnoty v každém měsíci přepočítány pro průměrné teploty daného měsíce pomocí tabulky s hodnotami teploty během roku, což v případě České republiky vede ke snížení celkového výkonu elektrárny \cite{Cotmas-2018}.
+Protože se efektivita panelu snižuje při vyšších teplotách vzduchu, jsou hodnoty v každém měsíci přepočítány pro průměrné teploty daného měsíce pomocí tabulky s hodnotami teploty během roku \cite{Cotmas-2018}.
 
-Započítáno je zde i pro kratší období zanedbatelné půlprocentní opotřebení panelu za rok, které se významně projeví pouze při simulacích několika let.
+Započítáno je zde i pro kratší období zanedbatelné půlprocentní opotřebení panelu za rok, které se významněji projeví pouze při simulacích s intervalem několika let.
 
-Počasí je simulováno dle počtu hodin, kdy během měsíce svítí slunce. Ten se vydělí délkou daného dne a takto získáme počet slunečných dní. 
-Změna výkonu  v závislosti na čase během slunečného dne se nachází na grafu~\ref{fig:solar_day_clear} \cite{Journal-of-PV-2020}.
+Počasí je simulováno dle počtu hodin, kdy během měsíce svítí slunce. Ten se vydělí průměrnou délkou dne v daném měsíci a takto získáme počet slunečných dní v jednotlivých měsících.
+Změna výkonu v závislosti na čase během slunečného letního dne se nachází na grafu~\ref{fig:solar_day_clear} \cite{Journal-of-PV-2020}.
 
 \begin{figure}[H]
 \begin{center}
 \includegraphics[width=0.8\linewidth]{img/solar_day_clear.pdf}
-\caption{Výkon solárního panelu během jasného letního dne}
 \end{center}
+\caption{Výkon solárního panelu během jasného letního dne}
 \label{fig:solar_day_clear}
 \end{figure}
 
-Zatažené dny jsou v měsíci vybírány náhodně tak, aby celkový počet slunečných a zatažených hodin v měsíci se rovnal sumě počtu hodin mezi východem a západem slunce. Intenzita zataženosti je počítána jako průměr předchozí hodnoty zataženosti a hodnoty náhodné. Tímto způsebem získáme hodnoty, které odpovídají hodnotám skutečně naměřeným. Výkon elektrárny během oblačného dne se nachází v grafu~\ref{fig:solar_day_cloudy} \cite{Zilvar-2022}.
+Zatažené dny jsou v měsíci vybírány náhodně tak, aby celkový počet slunečných a zatažených hodin v měsíci se rovnal sumě počtů hodin mezi východem a západem slunce v jednotlivývh dnech. Intenzita zataženosti je počítána jako průměr předchozí hodnoty zataženosti a hodnoty náhodné. Tímto způsobem získáme hodnoty, které odpovídají hodnotám skutečně naměřeným. Výkon elektrárny během oblačného dne se nachází v grafu~\ref{fig:solar_day_cloudy}.
 
 \begin{figure}[H]
 \begin{center}
 \includegraphics[width=0.8\linewidth]{img/solar_day_cloudy.pdf}
-\caption{Výkon solárního panelu během zataženého letního dne}
 \end{center}
+\caption{Výkon solárního panelu během zataženého letního dne}
 \label{fig:solar_day_cloudy}
 \end{figure}
 
@@ -154,8 +153,8 @@ Ve výsledku elektrárna generuje výkon, jaký by se dal v dané oblasti - Brn�
 \begin{figure}[t]
 \begin{center}
 \includegraphics[width=0.8\linewidth]{img/solar_power_hist.pdf}
-\caption{Suma výkonů v jednotlivých měsících}
 \end{center}
+\caption{Suma výkonů v jednotlivých měsících}
 \label{fig:solar_power_hist}
 \end{figure}
 
@@ -192,7 +191,9 @@ Tato spotřeba je zobrazena na obrázku~\ref{fig:load_power},
 kde jedna křivka představuje okamžitou spotřebu a druhá šestihodinový pohyblivý průměr.
 
 \begin{figure}[H]
-\includegraphics[width=\linewidth]{img/load_power.pdf}
+\begin{center}
+\includegraphics[width=0.8\linewidth]{img/load_power.pdf}
+\end{center}
 \caption{Spotřeba domácnosti v intervalu 5 dní}
 \label{fig:load_power}
 \end{figure}
@@ -222,7 +223,9 @@ Implementovaný model víceméně koresponduje s předlohou \cite{Torriti-2017}.
 Celá domácnost spotřebuje 3.27~MWh za rok, což zhruba odpovídá průměrné spotřebě domácnosti v České Republice \cite{CEZ}.
 
 \begin{figure}[H]
-\includegraphics[width=\linewidth]{img/average_day_load.pdf}
+\begin{center}
+\includegraphics[width=0.8\linewidth]{img/average_day_load.pdf}
+\end{center}
 \caption{Průměrná spotřeba domácnosti v každé hodině dne}
 \label{fig:average_day_load}
 \end{figure}
@@ -519,7 +522,7 @@ Pokud je vozidlo pryč, když je elektrárna aktivní, je velká část energie 
 Toto ale nemusí být případ všech domácností.
 
 Při vybíjení vozidla také dochází k poměrně velkým ztrátám.
-Tyto ztráty mít podobnou cenu jako dodávání energie do sítě a následném odběru zpět.
+Tyto ztráty mají podobnou cenu jako dodávání energie do sítě a následném odběru zpět.
 Ceny nákupu a výkupu energie jsou velmi proměnné a proto je nelze snadno porovnat s cenou ztrát.
 
 Také má tato technologie nevýhodu, že opotřebovává baterii vozidla.

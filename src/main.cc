@@ -143,7 +143,8 @@ class Solar : public Process
 	// https://www.cleanenergyreviews.info/blog/most-efficient-solar-panels
 	float effDropTemp()
 	{
-		// Reduce efficiency when temperature
+		// Reduce efficiency by temperature
+		// Data from link above
 		int m = getMonth();
 		return ((-3.0 * yearlyTemp[m]) / 10.0 + 107.5) / 100.0 * effByMonth();
 	}
